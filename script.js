@@ -86,6 +86,51 @@ function launchConfetti(count = 10) {
     } catch (e) { console.warn('launchConfetti failed', e); }
 }
 
+/* Reusable preview popup for a log entry (used by submit and View buttons) */
+function showLogPreview(entry) {
+    try {
+        const existing = document.getElementById('log-preview');
+        if (existing) existing.remove();
+        const preview = document.createElement('div'); preview.id = 'log-preview';
+        preview.className = 'card';
+        preview.style.position = 'fixed'; preview.style.right = '18px'; preview.style.bottom = '18px'; preview.style.zIndex = 2200; preview.style.maxWidth = '360px';
+        preview.style.boxShadow = '0 12px 36px rgba(0,0,0,0.06)';
+        preview.innerHTML = `
+            <div style="display:flex; justify-content:space-between; gap:8px; align-items:center;">
+                <div>
+                    <div style="font-weight:800">Log saved — ${entry.date}</div>
+                    <div class="text-muted" style="font-size:0.9rem; margin-top:6px;">Mood: ${entry.mood} — ${entry.tags && entry.tags.length ? entry.tags.join(', ') : 'No tags'}</div>
+                    <div style="margin-top:8px; color:var(--color-text);">${entry.notes ? (entry.notes.length > 140 ? entry.notes.slice(0,140)+'…' : entry.notes) : '<span class="text-muted">No notes</span>'}</div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px; margin-left:8px;">
+                    <button id="preview-edit" class="secondary-btn">Edit</button>
+                    <button id="preview-close" class="control-btn">Close</button>
+                </div>
+            </div>`;
+    document.body.appendChild(preview);
+    // make focusable and set ARIA
+    preview.setAttribute('role', 'dialog');
+    preview.setAttribute('aria-live', 'polite');
+    preview.setAttribute('tabindex', '-1');
+    // wire actions
+    document.getElementById('preview-close').addEventListener('click', () => { preview.remove(); });
+        document.getElementById('preview-edit').addEventListener('click', () => {
+            // populate form for quick editing (no redirect)
+            const input = document.querySelector(`input[name="mood"][value="${entry.mood}"]`);
+            if (input) input.checked = true;
+            document.getElementById('activity-tags').value = (entry.tags || []).join(', ');
+            document.getElementById('mood-notes').value = entry.notes || '';
+            // focus notes for editing and remove preview
+            document.getElementById('mood-notes').focus();
+            preview.remove();
+        });
+    // move focus into preview for keyboard users
+    setTimeout(() => { try { preview.focus(); } catch (e) {} }, 60);
+    // auto-dismiss after a time unless user interacts
+    setTimeout(() => { if (document.getElementById('log-preview')) preview.remove(); }, 7000);
+    } catch (err) { console.warn('showLogPreview failed', err); }
+}
+
 // --- Core Functionality ---
 
 /**
@@ -214,13 +259,8 @@ function renderLogsList(history) {
         const actions = document.createElement('div');
         const viewBtn = document.createElement('button'); viewBtn.className = 'secondary-btn'; viewBtn.textContent = 'View';
         viewBtn.addEventListener('click', () => {
-            // Scroll to logger and populate form with entry for editing
-            document.getElementById('mood-log-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // populate
-            const input = document.querySelector(`input[name="mood"][value="${entry.mood}"]`);
-            if (input) input.checked = true;
-            document.getElementById('activity-tags').value = (entry.tags || []).join(', ');
-            document.getElementById('mood-notes').value = entry.notes || '';
+            // show a preview popout for the selected entry (no redirect)
+            showLogPreview(entry);
         });
 
         const delBtn = document.createElement('button'); delBtn.className = 'control-btn'; delBtn.textContent = 'Delete';
@@ -386,6 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('assist-close').addEventListener('click', () => { const q = document.getElementById('quick-assist'); if (q) q.remove(); });
             }
         }
+        // Show a small non-blocking preview popup summarizing the saved log
+        try { showLogPreview(newLog); } catch (e) { console.warn('preview call failed', e); }
     });
     
     // View toggle buttons (7 day / 30 day)
