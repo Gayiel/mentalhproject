@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Daily Mood Log - Accessible Mental Health Tool</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script> 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <a class="skip-link" href="#mood-log-form">Skip to main content</a>
+
+    <header class="topbar" role="banner" aria-label="Top navigation">
+        <div class="topbar-left">
+            <div class="avatar" aria-hidden="true">MH</div>
+            <div class="brand">
+                <strong class="brand-title">MoodHouse</strong>
+                <span class="brand-sub">Daily Check-in</span>
+            </div>
+        </div>
+        <nav class="top-actions" aria-label="Profile actions">
+            <button id="toggle-soft-btn" class="control-btn" aria-pressed="false" title="Toggle softer colors">Softer colors</button>
+            <button class="icon-btn" aria-label="Settings">⚙️</button>
+        </nav>
+    </header>
+
+    <main id="mood-app-container">
+
+        <section id="mood-logger" aria-labelledby="logger-title" class="card">
+            <h2 id="logger-title">How are you feeling today?</h2>
+            <form id="mood-log-form">
+                
+                    <p class="date-display">Today's Date: <time id="current-date" datetime=""></time></p>
+                
+                <fieldset class="mood-scale" role="radiogroup" aria-label="Select your current mood on a scale from very good to very bad" tabindex="0">
+                    <legend class="sr-only">Mood Selection</legend>
+                    <div class="mood-options">
+                        <input type="radio" id="mood-vgood" name="mood" value="5" required>
+                        <label for="mood-vgood" class="mood-label" data-mood="5" aria-label="Mood: Very Good">✨ Very Good</label>
+                        
+                        <input type="radio" id="mood-good" name="mood" value="4">
+                        <label for="mood-good" class="mood-label" data-mood="4" aria-label="Mood: Good">😊 Good</label>
+
+                        <input type="radio" id="mood-neutral" name="mood" value="3">
+                        <label for="mood-neutral" class="mood-label" data-mood="3" aria-label="Mood: Neutral">😐 Neutral</label>
+                        
+                        <input type="radio" id="mood-bad" name="mood" value="2">
+                        <label for="mood-bad" class="mood-label" data-mood="2" aria-label="Mood: Bad">🙁 Bad</label>
+                        
+                        <input type="radio" id="mood-vbad" name="mood" value="1">
+                        <label for="mood-vbad" class="mood-label" data-mood="1" aria-label="Mood: Very Bad">😔 Very Bad</label>
+                    </div>
+                </fieldset>
+
+                <div class="input-group">
+                    <label for="activity-tags">What contributed to this mood? (Separate with commas)</label>
+                    <input type="text" id="activity-tags" placeholder="E.g., Slept well, Stress at work, Socialized">
+                </div>
+
+                <div class="input-group">
+                    <label for="mood-notes">Optional Contextual Notes</label>
+                    <textarea id="mood-notes" rows="3" aria-describedby="notes-help"></textarea>
+                    <small id="notes-help" class="hint-text">Keep it brief and focused on the facts.</small>
+                </div>
+
+                <button type="submit" id="log-mood-btn" class="primary-btn">Log My Mood</button>
+            </form>
+        </section>
+
+        <aside id="resource-banner" class="alert-banner hidden" role="alert" aria-live="polite">
+            <p>It looks like you've logged a challenging mood pattern. <strong>Immediate, affordable support is available.</strong></p>
+            <a href="resources.html" class="secondary-btn">Access Guided Resources</a>
+        </aside>
+
+        <section id="mood-history" aria-labelledby="history-title" class="card">
+                        <div class="history-header" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                            <h2 id="history-title" style="margin:0">Your Mood Trends</h2>
+                            <div>
+                                <button id="toggle-history-btn" class="control-btn" aria-expanded="true" aria-controls="mood-chart-container log-list">Collapse</button>
+                            </div>
+                        </div>
+            <div class="filter-controls">
+                <button id="view-7-day" class="control-btn active" aria-controls="mood-chart">7-Day Trend</button>
+                <button id="view-30-day" class="control-btn" aria-controls="mood-chart">Monthly Summary</button>
+                <button id="find-support-btn" class="control-btn" type="button">Find Nearby Support</button>
+            </div>
+            
+            <div id="mood-chart-container" class="chart-container">
+                <canvas id="mood-chart" role="img" aria-label="Interactive line graph displaying your daily average mood score." aria-describedby="chart-desc"></canvas>
+                <p id="chart-desc" class="sr-only">This chart shows the recent trend of your daily mood scores. Higher values represent better mood.</p>
+                <div id="no-data" class="no-data" aria-hidden="true">No mood logs yet. Use the form above to record your first check-in.</div>
+            </div>
+
+            <!-- Log list: users can review and delete past entries -->
+            <div id="log-list" class="card" aria-live="polite">
+                <h3>Your Logs</h3>
+                <div id="logs-container">
+                    <p class="text-muted">No logs yet. Your entries will appear here.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="page-footer" role="contentinfo">
+        <p>Private &middot; For self-reflection and to help connect to resources when needed.</p>
+    </footer>
+
+    <!-- Toast / transient feedback area -->
+    <div id="toast-area" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Settings modal (hidden by default) -->
+    <div id="settings-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <div class="modal-content card">
+            <h3 id="settings-title">Settings</h3>
+            <p class="text-muted">Small preferences for MoodHouse.</p>
+            <div style="display:flex; gap:8px; margin-top:10px; align-items:center;">
+                <label for="hotline-region" class="text-muted" style="font-weight:700; margin-right:8px;">Hotline region</label>
+                <select id="hotline-region" aria-label="Select hotline region">
+                    <option value="us">United States (SAMHSA)</option>
+                    <option value="uk">United Kingdom (Samaritans)</option>
+                    <option value="au">Australia (Lifeline)</option>
+                </select>
+                <div style="margin-left:auto; display:flex; gap:8px;">
+                    <button id="settings-close" class="control-btn">Close</button>
+                    <button id="settings-about" class="secondary-btn">About</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom navigation: Instagram-style quick access -->
+    <nav id="bottom-nav" class="bottom-nav" role="navigation" aria-label="Main navigation">
+        <button class="nav-btn active" data-target="mood-logger" aria-label="Home">🏠<span class="nav-label">Home</span></button>
+        <button class="nav-btn" data-target="mood-logger" aria-label="Log">✍️<span class="nav-label">Log</span></button>
+        <button class="nav-btn" data-target="mood-history" aria-label="Trends">📈<span class="nav-label">Trends</span></button>
+    <button class="nav-btn" data-href="resources.html" aria-label="Resources">🔗<span class="nav-label">Resources</span></button>
+    </nav>
+
+    <script src="script.js"></script>
+</body>
+</html>
