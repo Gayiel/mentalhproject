@@ -6,11 +6,14 @@
     <title>My Daily Mood Log - Accessible Mental Health Tool</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <!-- Note: The React MVP has been moved to the Vite app under mvp-app/. Remove the in-page demo to keep this page lightweight. -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- keep site styling from style.css for cohesive look -->
 </head>
 <body>
-    <a class="skip-link" href="#mood-log-form">Skip to main content</a>
+    <a class="skip-link" href="#mind-flow-root">Skip to main content</a>
 
     <header class="topbar" role="banner" aria-label="Top navigation">
         <div class="topbar-left">
@@ -36,24 +39,19 @@
         <section id="mood-logger" aria-labelledby="logger-title" class="card">
             <h2 id="logger-title">How are you feeling today?</h2>
             <form id="mood-log-form">
-                
-                    <p class="date-display">Today's Date: <time id="current-date" datetime=""></time></p>
-                
-                <fieldset class="mood-scale" role="radiogroup" aria-label="Select your current mood on a scale from very good to very bad" tabindex="0">
+                <p class="date-display">Today's Date: <time id="current-date" datetime=""></time></p>
+
+                <fieldset class="mood-scale" role="radiogroup" aria-label="Select your current mood" tabindex="0">
                     <legend class="sr-only">Mood Selection</legend>
                     <div class="mood-options">
                         <input type="radio" id="mood-vgood" name="mood" value="5" required>
                         <label for="mood-vgood" class="mood-label" data-mood="5" aria-label="Mood: Very Good">✨ Very Good</label>
-                        
                         <input type="radio" id="mood-good" name="mood" value="4">
                         <label for="mood-good" class="mood-label" data-mood="4" aria-label="Mood: Good">😊 Good</label>
-
                         <input type="radio" id="mood-neutral" name="mood" value="3">
                         <label for="mood-neutral" class="mood-label" data-mood="3" aria-label="Mood: Neutral">😐 Neutral</label>
-                        
                         <input type="radio" id="mood-bad" name="mood" value="2">
                         <label for="mood-bad" class="mood-label" data-mood="2" aria-label="Mood: Bad">🙁 Bad</label>
-                        
                         <input type="radio" id="mood-vbad" name="mood" value="1">
                         <label for="mood-vbad" class="mood-label" data-mood="1" aria-label="Mood: Very Bad">😔 Very Bad</label>
                     </div>
@@ -74,16 +72,11 @@
             </form>
         </section>
 
-                <!-- Embedded React MVP section -->
-                <section id="mvp-section" class="card">
-                        <div id="mvp-root">
-                            <div class="mvp-placeholder">
-                                <h3>Mental Health MVP</h3>
-                                <p class="text-muted">The interactive AI demo has been moved to a standalone Vite app for development and better tooling.</p>
-                                <p class="text-muted">Run the Vite app in <code>mvp-app/</code> (see <code>mvp-app/README.md</code>) and open <code>http://localhost:5173</code>.</p>
-                            </div>
-                        </div>
-                </section>
+        <section id="mind-flow" aria-labelledby="mind-flow-title" class="card">
+            <div id="mind-flow-root"></div>
+        </section>
+
+
 
         <aside id="resource-banner" class="alert-banner hidden" role="alert" aria-live="polite">
             <p>It looks like you've logged a challenging mood pattern. <strong>Immediate, affordable support is available.</strong></p>
@@ -156,6 +149,474 @@
     </nav>
 
     <script src="script.js"></script>
-        <!-- The full interactive demo has been moved into the Vite app at mvp-app/ for development. -->
+    <script type="text/babel">
+    const STORAGE_KEY = 'accessibleMoodHistory'
+        const API_URL = 'http://127.0.0.1:5000/evaluate'
+        const FETCH_TIMEOUT_MS = 5000
+
+        function safeParse(json) {
+            try { return JSON.parse(json) } catch (e) { return null }
+        }
+
+        function nowDate() { return new Date().toISOString().slice(0, 10) }
+
+        function MindFlow() {
+            const [logs, setLogs] = React.useState(() => {
+                const raw = localStorage.getItem(STORAGE_KEY)
+                return safeParse(raw) || []
+            })
+            const [chartWindow, setChartWindow] = React.useState('all') // 'all' | '7' | '30'
+            const [input, setInput] = React.useState('')
+            const [messages, setMessages] = React.useState([])
+            const [isTyping, setIsTyping] = React.useState(false)
+            const [awaiting, setAwaiting] = React.useState(null) // follow-up step
+            const scrollRef = React.useRef(null)
+            const chartRef = React.useRef(null)
+
+            const startOptions = [
+                { label: "Just checking in", text: "Just checking in — wondering how I'm doing today." },
+                { label: "Feeling stressed", text: "I've been feeling stressed and overwhelmed." },
+                { label: "Feeling low", text: "Lately I've been feeling a bit low and unmotivated." },
+                { label: "Need urgent help", text: "I might need urgent help — I'm worried about my safety." }
+            ]
+
+            // Utility: save logs and update chart (use page-level renderers)
+            function persistLogs(next) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+                setLogs(next)
+                // use the page-level render functions from script.js
+                try { renderMoodChart(next); } catch (e) { console.warn('renderMoodChart not available yet', e) }
+                try { renderLogsList(next); } catch (e) { console.warn('renderLogsList not available yet', e) }
+            }
+
+            React.useEffect(() => {
+                // initial bot greeting
+                pushBot("Hi — I'm Mind Flow. How can I help you today? You can say anything or try one of the quick starters below.")
+                try { renderMoodChart(logs); } catch (e) { console.warn('renderMoodChart not available', e) }
+                try { renderLogsList(logs); } catch (e) { console.warn('renderLogsList not available', e) }
+
+                // listen to updates from other UI (form/script.js)
+                function onMoodUpdate(e) {
+                    const next = (e && e.detail) ? e.detail : safeParse(localStorage.getItem(STORAGE_KEY)) || []
+                    setLogs(next)
+                    try { renderMoodChart(next); } catch (err) {}
+                    try { renderLogsList(next); } catch (err) {}
+                }
+                window.addEventListener('moodHistoryUpdated', onMoodUpdate)
+                window.addEventListener('storage', onMoodUpdate)
+
+                // Wire existing page controls: collapse, view filters, find support
+                const toggleBtn = document.getElementById('toggle-history-btn')
+                const view7 = document.getElementById('view-7-day')
+                const view30 = document.getElementById('view-30-day')
+                const findBtn = document.getElementById('find-support-btn')
+                function onToggle() {
+                    const chartContainer = document.getElementById('mood-chart-container')
+                    const list = document.getElementById('log-list')
+                    if (!chartContainer || !list) return
+                    const hidden = chartContainer.style.display === 'none'
+                    chartContainer.style.display = hidden ? 'block' : 'none'
+                    list.style.display = hidden ? 'block' : 'none'
+                    if (toggleBtn) toggleBtn.textContent = hidden ? 'Collapse' : 'Expand'
+                }
+                function onView7() { setChartWindow('7') }
+                function onView30() { setChartWindow('30') }
+                function onViewAll() { setChartWindow('all') }
+                if (toggleBtn) toggleBtn.addEventListener('click', onToggle)
+                if (view7) view7.addEventListener('click', onView7)
+                if (view30) view30.addEventListener('click', onView30)
+                if (findBtn) findBtn.addEventListener('click', findClinics)
+
+                return () => {
+                    if (toggleBtn) toggleBtn.removeEventListener('click', onToggle)
+                    if (view7) view7.removeEventListener('click', onView7)
+                    if (view30) view30.removeEventListener('click', onView30)
+                    if (findBtn) findBtn.removeEventListener('click', findClinics)
+                    window.removeEventListener('moodHistoryUpdated', onMoodUpdate)
+                    window.removeEventListener('storage', onMoodUpdate)
+                }
+                // eslint-disable-next-line react-hooks/exhaustive-deps
+            }, [])
+
+            React.useEffect(() => {
+                if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+            }, [messages, isTyping])
+
+            // keep chart and logs in sync when data or window changes
+            React.useEffect(() => {
+                try {
+                    try { renderMoodChart(logs); } catch (e) { console.warn('renderMoodChart not available', e) }
+                    renderLogs(logs)
+                } catch (e) {
+                    // silent fail for render issues
+                    console.error('Chart render error', e)
+                }
+            }, [logs, chartWindow])
+
+            function pushUser(text) {
+                setMessages(prev => [...prev, { type: 'user', text }])
+            }
+            function pushBot(text, meta) {
+                setMessages(prev => [...prev, { type: 'bot', text, meta }])
+            }
+
+            const crisisPatterns = ['kill myself','end my life','suicide','hurt myself','cutting','no reason to live','i might harm']
+            function detectCrisis(text) {
+                const lt = (text||'').toLowerCase()
+                return crisisPatterns.some(p => lt.includes(p))
+            }
+
+            function handleSendText(rawText) {
+                const text = rawText || input
+                if (!text || !text.trim()) return
+                // detect reset/start-over phrases
+                const lower = text.toLowerCase()
+                if (lower.includes('reset') || lower.includes('start over') || lower.includes('clear conversation')) {
+                    // ask confirmation
+                    pushUser(text)
+                    pushBot('Do you want to reset this conversation? This will clear messages but keep your saved mood logs. Reply Yes to confirm.', { confirmReset: true })
+                    setAwaiting('confirm_reset')
+                    setInput('')
+                    return
+                }
+                pushUser(text)
+                setInput('')
+                setIsTyping(true)
+                setTimeout(() => {
+                    setIsTyping(false)
+                    const crisis = detectCrisis(text)
+                    if (crisis) {
+                        pushBot("I'm worried by what you shared. If you're in immediate danger, please call emergency services now. Would you like quick resources or to find clinics nearby?", { crisis: true })
+                        setAwaiting('offer_clinic')
+                        return
+                    }
+
+                    // natural follow-up: ask how long and whether they want resources
+                    pushBot("Thanks for sharing. Can you tell me how long you've felt like this?", { question: 'duration' })
+                    setAwaiting('duration')
+                }, 700)
+            }
+
+            // confirm reset handling
+            if (awaiting === 'confirm_reset') {
+                // handled inside handleFollowUp when user replies 'yes' or 'no'
+            }
+
+            function handleFollowUp(action, payload) {
+                const actLower = (action || '').toString().toLowerCase()
+                // handle explicit confirm reset
+                if (awaiting === 'confirm_reset') {
+                    if (actLower.includes('yes') || actLower === 'y' || actLower.includes('confirm')) {
+                        // reset conversation messages, keep logs
+                        setMessages([])
+                        pushBot("Conversation reset. I'm here when you need to talk.")
+                        setAwaiting(null)
+                        return
+                    } else {
+                        pushBot('Okay — I will keep the current conversation.')
+                        setAwaiting(null)
+                        return
+                    }
+                }
+                if (awaiting === 'duration') {
+                    pushUser(action)
+                    pushBot("Thanks. Would you like suggestions to cope right now, or help finding nearby clinics/services?", { question: 'help_type' })
+                    setAwaiting('help_type')
+                    return
+                }
+                if (awaiting === 'help_type') {
+                    pushUser(action)
+                    if (action.toLowerCase().includes('near')) {
+                        // try geolocation then open maps search
+                        findClinics()
+                        pushBot('Looking for nearby clinics. If location is blocked, I can show links instead.')
+                        setAwaiting(null)
+                    } else {
+                        pushBot('Here are a few coping suggestions you can try now: take three deep breaths, step outside for five minutes, or text a friend. Would you like to rate how you feel right now (1 = very bad, 5 = very good)?')
+                        setAwaiting('rate')
+                    }
+                    return
+                }
+                if (awaiting === 'offer_clinic') {
+                    pushUser(action)
+                    if (action.toLowerCase().includes('yes') || action.toLowerCase().includes('clinic') || action.toLowerCase().includes('near')) {
+                        findClinics()
+                        pushBot('Searching for local clinics. If you prefer, tell me your city or postcode.')
+                    } else {
+                        pushBot('Okay. If you change your mind, I can help find resources. Would you like some coping tips now?')
+                        setAwaiting('rate')
+                    }
+                    setAwaiting(null)
+                    return
+                }
+                if (awaiting === 'rate') {
+                    // action expected to be rating like '3' or '4'
+                    const rating = Number(action)
+                    if (!isNaN(rating) && rating >= 1 && rating <= 5) {
+                        addLog(rating, payload || '')
+                        pushUser(`Mood rating: ${rating}`)
+                        pushBot('Thanks — saved to your mood history.')
+                        // ask for quick feedback
+                        setTimeout(() => pushBot('Was this helpful? (Yes / No)'), 300)
+                        setAwaiting('feedback')
+                    } else {
+                        pushBot('Please choose a rating from 1 to 5.')
+                    }
+                    setAwaiting(null)
+                    return
+                }
+                if (awaiting === 'feedback') {
+                    if (actLower.includes('yes')) {
+                        pushUser(action)
+                        pushBot('Thanks — glad it helped.')
+                    } else if (actLower.includes('no')) {
+                        pushUser(action)
+                        pushBot('Thanks for the feedback — I will try to do better. You can tell me more if you want.')
+                    }
+                    setAwaiting(null)
+                    return
+                }
+            }
+
+            function addLog(mood, note) {
+                const entry = { date: nowDate(), mood: Number(mood), note: note || '' }
+                const next = [...logs, entry]
+                persistLogs(next)
+            }
+
+            // explicit controls for clearing logs and resetting conversation
+            function clearLogs() {
+                if (!confirm('Clear all saved mood logs? This cannot be undone.')) return
+                persistLogs([])
+                pushBot('Your saved mood logs have been cleared.')
+            }
+
+            function resetConversation() {
+                if (!confirm('Reset conversation (this will clear chat messages)?')) return
+                setMessages([])
+                pushBot("Conversation reset. I'm here when you need to talk.")
+            }
+
+            // rely on page-level renderLogsList to populate #logs-container
+
+            function filterLogsByWindow(list, windowKey) {
+                if (!list || list.length === 0) return []
+                if (windowKey === 'all') return list
+                const days = windowKey === '7' ? 7 : 30
+                const cutoff = new Date()
+                cutoff.setDate(cutoff.getDate() - (days - 1))
+                return list.filter(l => new Date(l.date) >= cutoff)
+            }
+
+            // chart rendering handled by page script's renderMoodChart
+
+            function findClinics() {
+                // try geolocation; if available open Google Maps search
+                if (!navigator.geolocation) {
+                    window.open('https://www.google.com/search?q=mental+health+clinic+near+me', '_blank')
+                    return
+                }
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    const { latitude, longitude } = pos.coords
+                    const url = `https://www.google.com/maps/search/mental+health+clinic/@${latitude},${longitude},12z`;
+                    window.open(url, '_blank')
+                }, (err) => {
+                    // fallback search
+                    window.open('https://www.google.com/search?q=mental+health+clinic+near+me', '_blank')
+                }, { timeout: 5000 })
+            }
+
+            // Export helpers: CSV and JSON
+            function exportLogsCSV() {
+                const data = (localStorage.getItem(STORAGE_KEY) && safeParse(localStorage.getItem(STORAGE_KEY))) || logs || []
+                if (!data || data.length === 0) { alert('No logs to export'); return }
+                const header = ['date','mood','note']
+                const rows = data.map(r => [r.date, String(r.mood), '"' + (r.note || '').replace(/"/g, '""') + '"'])
+                const csv = [header.join(','), ...rows.map(r => r.join(','))].join('\r\n')
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `mindflow-logs-${nowDate()}.csv`
+                document.body.appendChild(a)
+                a.click()
+                a.remove()
+                URL.revokeObjectURL(url)
+            }
+
+            function exportLogsJSON() {
+                const data = (localStorage.getItem(STORAGE_KEY) && safeParse(localStorage.getItem(STORAGE_KEY))) || logs || []
+                if (!data || data.length === 0) { alert('No logs to export'); return }
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `mindflow-logs-${nowDate()}.json`
+                document.body.appendChild(a)
+                a.click()
+                a.remove()
+                URL.revokeObjectURL(url)
+            }
+
+            // Simple accessibility audit: tab order check and contrast ratio check for key elements
+            function runAccessibilityAudit() {
+                const reportEl = document.getElementById('accessibility-audit')
+                const issues = []
+                // Tab order: ensure important interactive elements are focusable
+                const selectors = ['#log-mood-btn', '#mind-flow-root input, #mind-flow-root button, #mind-flow-root a', '#view-7-day', '#view-30-day', '#find-support-btn']
+                selectors.forEach(sel => {
+                    try {
+                        const els = document.querySelectorAll(sel)
+                        els.forEach(el => {
+                            if (!(el.tabIndex >= 0 || el.getAttribute('href') || el.disabled === false)) {
+                                issues.push(`Element ${el.tagName} missing focusable attribute or tabindex: ${sel}`)
+                            }
+                        })
+                    } catch (e) {}
+                })
+
+                // Contrast checks for text on primary buttons and chat bubbles (very lightweight: compare luminance)
+                function luminance(hex) {
+                    if (!hex) return 0
+                    hex = hex.replace('#','')
+                    if (hex.length === 3) hex = hex.split('').map(h=>h+h).join('')
+                    const r = parseInt(hex.substring(0,2),16)/255
+                    const g = parseInt(hex.substring(2,4),16)/255
+                    const b = parseInt(hex.substring(4,6),16)/255
+                    const a = [r,g,b].map(c => c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055,2.4))
+                    return 0.2126*a[0] + 0.7152*a[1] + 0.0722*a[2]
+                }
+                function contrast(hex1, hex2) { const L1 = luminance(hex1); const L2 = luminance(hex2); const higher = Math.max(L1,L2); const lower = Math.min(L1,L2); return (higher+0.05)/(lower+0.05) }
+
+                // pick computed styles
+                const primaryBtn = document.querySelector('.primary-btn')
+                const bodyBg = window.getComputedStyle(document.body).backgroundColor || '#ffffff'
+                // try to convert rgb(...) to hex
+                function rgbToHex(rgb) {
+                    const m = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+                    if (!m) return null
+                    return '#' + [1,2,3].map(i=>Number(m[i]).toString(16).padStart(2,'0')).join('')
+                }
+                try {
+                    if (primaryBtn) {
+                        const fg = window.getComputedStyle(primaryBtn).color
+                        const bg = window.getComputedStyle(primaryBtn).backgroundColor
+                        const fgHex = rgbToHex(fg) || '#000000'
+                        const bgHex = rgbToHex(bg) || '#ffffff'
+                        const c = contrast(fgHex, bgHex)
+                        if (c < 4.5) issues.push(`Low contrast on primary button: ${c.toFixed(2)}:1 (expected >= 4.5)`) 
+                    }
+                } catch (e) {}
+
+                // simple tab order sanity: ensure first focusable is skip link
+                const firstFocusable = document.querySelector('a.skip-link, button, [tabindex], input, select, textarea')
+                if (firstFocusable && firstFocusable.classList && firstFocusable.classList.contains('skip-link') === false) {
+                    issues.push('First focusable element is not the skip-link; consider placing skip link first for keyboard users.')
+                }
+
+                // render report
+                if (!reportEl) return alert('Audit: ' + (issues.length ? issues.join('\n') : 'No issues found.'))
+                reportEl.innerHTML = ''
+                const title = document.createElement('div')
+                title.style.fontWeight = '700'
+                title.textContent = 'Accessibility audit results:'
+                reportEl.appendChild(title)
+                if (issues.length === 0) {
+                    const ok = document.createElement('div')
+                    ok.textContent = 'No immediate issues found with quick checks.'
+                    reportEl.appendChild(ok)
+                } else {
+                    const ul = document.createElement('ul')
+                    issues.forEach(i => { const li = document.createElement('li'); li.textContent = i; ul.appendChild(li) })
+                    reportEl.appendChild(ul)
+                }
+            }
+
+            // render UI
+            return (
+                <div className="mindflow-container" style={{ maxWidth: '900px', margin: '0 auto' }}>
+                    <div style={{ marginBottom: '12px' }}>
+                        <h2 style={{ margin: 0 }}>Mind Flow</h2>
+                        <p className="text-muted">A calm place to share — I'll ask a few gentle questions and help find resources if needed.</p>
+                    </div>
+
+                    <div className="card" style={{ padding: '12px' }}>
+                        <div style={{ marginBottom: '8px' }}>
+                            <div style={{ fontSize: '13px', color: '#666', marginBottom: '6px' }}>Start quickly</div>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                {startOptions.map((opt, i) => (
+                                    <button key={i} onClick={() => { setInput(opt.text); setTimeout(() => handleSendText(opt.text), 200) }} className="control-btn" tabIndex={0} aria-label={`Quick start: ${opt.label}`}>{opt.label}</button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div ref={scrollRef} style={{ maxHeight: '320px', overflowY: 'auto', padding: '8px', background: '#fafafa', borderRadius: '6px', border: '1px solid #eee' }}>
+                            {messages.length === 0 && <div style={{ textAlign: 'center', color: '#888', padding: '40px 0' }}>Type a message to begin — I’ll ask a few short questions to help.</div>}
+                            {messages.map((m, idx) => (
+                                <div key={idx} style={{ marginBottom: '10px', textAlign: m.type === 'user' ? 'right' : 'left' }}>
+                                    <div className={"chat-bubble " + (m.type === 'user' ? 'user' : 'bot')} role="article" aria-label={m.type === 'user' ? 'You said' : 'Mind Flow said'} tabIndex={0}>{m.text}</div>
+                                </div>
+                            ))}
+                            {isTyping && <div style={{ color: '#666' }}>...</div>}
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSendText()} placeholder="Type your message here..." aria-label="Type a message" style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }} />
+                            <button onClick={() => handleSendText()} className="primary-btn" aria-label="Send message">Send</button>
+                        </div>
+
+                        {/* follow-up quick replies area */}
+                        <div style={{ marginTop: '10px' }}>
+                            {awaiting === 'duration' && (
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    {['Just today','A few days','Weeks','Prefer not to say'].map((opt,i) => (
+                                        <button key={i} onClick={() => handleFollowUp(opt)} className="control-btn" tabIndex={0}>{opt}</button>
+                                    ))}
+                                </div>
+                            )}
+                            {awaiting === 'help_type' && (
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button onClick={() => handleFollowUp('Coping tips')} className="control-btn" tabIndex={0}>Coping tips</button>
+                                    <button onClick={() => handleFollowUp('Find nearby clinics')} className="control-btn" tabIndex={0}>Find clinics</button>
+                                </div>
+                            )}
+                            {awaiting === 'offer_clinic' && (
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button onClick={() => handleFollowUp('Yes, find clinics')} className="control-btn" tabIndex={0}>Yes</button>
+                                    <button onClick={() => handleFollowUp('No thanks')} className="control-btn" tabIndex={0}>No</button>
+                                </div>
+                            )}
+                            {awaiting === 'rate' && (
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    {[1,2,3,4,5].map(n => (
+                                        <button key={n} onClick={() => handleFollowUp(String(n))} className="control-btn" tabIndex={0}>{n}</button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Controls for Mood Trends & Logs (actual chart and logs are in the page section above) */}
+                        <div style={{ marginTop: '18px' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <button onClick={() => setChartWindow('7')} className="control-btn" tabIndex={0}>7-Day</button>
+                            <button onClick={() => setChartWindow('30')} className="control-btn" tabIndex={0}>30-Day</button>
+                            <button onClick={() => setChartWindow('all')} className="control-btn" tabIndex={0}>All</button>
+                            <button onClick={clearLogs} className="secondary-btn" tabIndex={0}>Clear logs</button>
+                            <button onClick={resetConversation} className="control-btn" tabIndex={0}>Reset chat</button>
+                            <button onClick={() => exportLogsCSV()} className="control-btn" tabIndex={0} aria-label="Export logs as CSV">Export CSV</button>
+                            <button onClick={() => exportLogsJSON()} className="control-btn" tabIndex={0} aria-label="Export logs as JSON">Export JSON</button>
+                            <button onClick={() => runAccessibilityAudit()} className="control-btn" tabIndex={0} aria-label="Run accessibility audit">Run a11y audit</button>
+                            <div style={{ marginLeft: 'auto', color: '#666', fontSize: '13px' }}>Use the "Your Mood Trends" section above for chart and log details.</div>
+                        </div>
+                        <div id="accessibility-audit" className="audit-report" aria-live="polite" style={{ marginTop: '8px' }}></div>
+                    </div>
+                </div>
+            )
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('mind-flow-root'))
+        root.render(<MindFlow />)
+    </script>
 </body>
 </html>

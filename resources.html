@@ -16,6 +16,10 @@
   </header>
 
   <main id="resources-container" style="max-width:920px;margin:18px auto;padding:18px;">
+    <div style="display:flex; gap:8px; justify-content:flex-end; margin-bottom:8px;">
+      <button id="resources-find-clinic" class="control-btn">Find nearby clinics</button>
+      <a href="index.html" class="secondary-btn">Back</a>
+    </div>
     <section class="card">
       <h2>Immediate Support</h2>
       <p class="text-muted">If you're in crisis or at risk, call your local emergency number immediately.</p>
@@ -52,5 +56,14 @@
 
     <footer style="margin-top:18px;color:rgba(255,255,255,0.8);">If you need localized resources, search your city or country on the official health department site.</footer>
   </main>
+  <script>
+    document.getElementById('resources-find-clinic').addEventListener('click', () => {
+      if (!navigator.geolocation) return window.open('https://www.google.com/search?q=mental+health+clinic+near+me','_blank')
+      navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude, longitude } = pos.coords
+        window.open(`https://www.google.com/maps/search/mental+health+clinic/@${latitude},${longitude},12z`, '_blank')
+      }, () => window.open('https://www.google.com/search?q=mental+health+clinic+near+me','_blank'))
+    })
+  </script>
 </body>
 </html>

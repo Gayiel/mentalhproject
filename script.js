@@ -30,7 +30,9 @@ function saveMoodHistory(history) {
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
         try {
-            localStorage.setItem(MOOD_HISTORY_KEY, JSON.stringify(history));
+                localStorage.setItem(MOOD_HISTORY_KEY, JSON.stringify(history));
+                // dispatch custom event so other components (MindFlow) can react
+                try { window.dispatchEvent(new CustomEvent('moodHistoryUpdated', { detail: history })); } catch (e) { /* ignore */ }
         } catch (e) {
             console.error('Failed to save mood history:', e);
         }
