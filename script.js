@@ -106,6 +106,7 @@ function showLogPreview(entry) {
                 </div>
                 <div style="display:flex; flex-direction:column; gap:8px; margin-left:8px;">
                     <button id="preview-edit" class="secondary-btn">Edit</button>
+                    <button id="preview-open" class="primary-btn">Open conversation</button>
                     <button id="preview-close" class="control-btn">Close</button>
                 </div>
             </div>`;
@@ -125,6 +126,11 @@ function showLogPreview(entry) {
             // focus notes for editing and remove preview
             document.getElementById('mood-notes').focus();
             preview.remove();
+        });
+        // Open conversation: dispatch an event with the conversation payload so embedded MindFlow can restore it
+        const openBtn = document.getElementById('preview-open');
+        if (openBtn) openBtn.addEventListener('click', () => {
+            try { window.dispatchEvent(new CustomEvent('restoreConversation', { detail: entry })) } catch (e) {}
         });
     // move focus into preview for keyboard users
     setTimeout(() => { try { preview.focus(); } catch (e) {} }, 60);
@@ -255,13 +261,24 @@ function renderLogsList(history) {
 
         const left = document.createElement('div');
         const d = document.createElement('div'); d.textContent = new Date(entry.date).toLocaleDateString(); d.style.fontWeight = '700';
-        const meta = document.createElement('div'); meta.className = 'text-muted'; meta.style.fontSize = '0.9rem'; meta.textContent = `Mood: ${entry.mood} — ${entry.tags ? entry.tags.join(', ') : ''}`;
+    const meta = document.createElement('div'); meta.className = 'text-muted'; meta.style.fontSize = '0.9rem';
+    let metaText = `Mood: ${entry.mood}`;
+    if (entry.tags && entry.tags.length) metaText += ` — ${entry.tags.join(', ')}`;
+    if (entry.starter) metaText += ` • Quick start: ${entry.starter}`;
+    meta.textContent = metaText;
         left.appendChild(d); left.appendChild(meta);
 
         const actions = document.createElement('div');
-        const viewBtn = document.createElement('button'); viewBtn.className = 'secondary-btn'; viewBtn.textContent = 'View';
+        const viewBtn = document.createElement('button'); viewBtn.className = 'secondary-btn'; viewBtn.textContent = entry.conversation ? 'Open' : 'View';
         viewBtn.addEventListener('click', () => {
-            // show a preview popout for the selected entry (no redirect)
+            // if this log contains a conversation snapshot, dispatch an event to restore it in the MindFlow UI
+            if (entry.conversation) {
+                try { window.dispatchEvent(new CustomEvent('restoreConversation', { detail: entry })) } catch (e) {}
+                // also show a small preview
+                showLogPreview(entry);
+                return
+            }
+            // otherwise show a preview popout for the selected entry
             showLogPreview(entry);
         });
 
@@ -323,8 +340,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const softToggle = document.getElementById('toggle-soft-btn');
         if (!softToggle) return;
         // If script earlier attached a handler inside checkContextualSupport, ensure aria state reflects stored value
-        const savedOn = localStorage.getItem('softThemeEnabled') === 'true';
-        softToggle.setAttribute('aria-pressed', savedOn);
+        // Theme cycling: support 1..5 theme variants stored in mh_theme_index
+        const savedIndex = Number(localStorage.getItem('mh_theme_index') || 0);
+        function applyThemeIndex(i) {
+            const root = document.documentElement;
+            // remove previous theme-* classes
+            for (let t = 1; t <= 5; t++) root.classList.remove('theme-' + t);
+            if (i >= 1 && i <= 5) root.classList.add('theme-' + i);
+            localStorage.setItem('mh_theme_index', String(i));
+            softToggle.setAttribute('aria-pressed', 'true');
+            if (liveStatus) liveStatus.textContent = `Theme ${i} applied`;
+            setTimeout(() => { if (liveStatus) liveStatus.textContent = '' }, 1600);
+        }
+        if (savedIndex >= 1 && savedIndex <= 5) applyThemeIndex(savedIndex);
+        else softToggle.setAttribute('aria-pressed', 'false');
+
+        softToggle.addEventListener('click', () => {
+            const cur = Number(localStorage.getItem('mh_theme_index') || 0) || 0;
+            const next = cur >= 5 ? 1 : cur + 1;
+            applyThemeIndex(next);
+        });
     })();
 
     // Create an offscreen live region for status messages (if not present)

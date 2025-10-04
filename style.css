@@ -247,6 +247,38 @@ input:focus, textarea:focus { border-color: var(--accent-teal); box-shadow: 0 6p
   --app-bg-bottom: #fff8e6;
 }
 
+/* Theme variants (1..5) — each adjusts some color tokens for a pleasant look */
+:root.theme-1 {
+  --accent-teal: #c9a77b;
+  --accent-purple: #bfa58a;
+  --mood-user-bg: #FFEDD5;
+  --mood-bot-bg: #FFFAF0;
+}
+:root.theme-2 {
+  --accent-teal: #9ad4b2;
+  --accent-purple: #c4a7e7;
+  --mood-user-bg: #FFF1E6;
+  --mood-bot-bg: #FEFEFB;
+}
+:root.theme-3 {
+  --accent-teal: #8fd3ff;
+  --accent-purple: #d7b3ff;
+  --mood-user-bg: #FFF8E1;
+  --mood-bot-bg: #FFFDFC;
+}
+:root.theme-4 {
+  --accent-teal: #ffd6a5;
+  --accent-purple: #ffb4a2;
+  --mood-user-bg: #FFF0F0;
+  --mood-bot-bg: #FFF8F4;
+}
+:root.theme-5 {
+  --accent-teal: #b5f0d0;
+  --accent-purple: #c7d2ff;
+  --mood-user-bg: #F6FFF8;
+  --mood-bot-bg: #FBFEFF;
+}
+
 /* Mind Flow and chat-specific helpers */
 .mindflow-container { width: 100%; }
 .chat-bubble { display: inline-block; padding: 10px 14px; border-radius: 12px; max-width: 78%; line-height:1.3; box-shadow: 0 1px 0 rgba(0,0,0,0.02); }

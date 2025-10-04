@@ -170,8 +170,10 @@
             const [messages, setMessages] = React.useState([])
             const [isTyping, setIsTyping] = React.useState(false)
             const [awaiting, setAwaiting] = React.useState(null) // follow-up step
+            const [currentStarter, setCurrentStarter] = React.useState(null)
             const scrollRef = React.useRef(null)
             const chartRef = React.useRef(null)
+            const lastStarterRef = React.useRef(null)
 
             const startOptions = [
                 { label: "Just checking in", text: "Just checking in — wondering how I'm doing today." },
@@ -187,6 +189,14 @@
                 // use the page-level render functions from script.js
                 try { renderMoodChart(next); } catch (e) { console.warn('renderMoodChart not available yet', e) }
                 try { renderLogsList(next); } catch (e) { console.warn('renderLogsList not available yet', e) }
+                // dispatch update so other components (and other tabs) can sync
+                try { window.dispatchEvent(new CustomEvent('moodHistoryUpdated', { detail: next })) } catch (e) {}
+                // small UX: try to scroll logs into view and show a toast if available
+                try {
+                    const logsEl = document.getElementById('logs-container')
+                    if (logsEl) { logsEl.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
+                } catch (e) {}
+                try { if (typeof showToast === 'function') showToast('Saved to Your Logs') } catch (e) {}
             }
 
             React.useEffect(() => {
@@ -204,6 +214,16 @@
                 }
                 window.addEventListener('moodHistoryUpdated', onMoodUpdate)
                 window.addEventListener('storage', onMoodUpdate)
+                // allow restoring a saved conversation from the logs preview
+                function onRestore(e) {
+                    const entry = (e && e.detail) ? e.detail : null
+                    if (!entry) return
+                    if (entry.conversation && Array.isArray(entry.conversation)) {
+                        try { setMessages(entry.conversation) } catch (er) {}
+                        try { setCurrentStarter(entry.starter || null) } catch (er) {}
+                    }
+                }
+                window.addEventListener('restoreConversation', onRestore)
 
                 // Wire existing page controls: collapse, view filters, find support
                 const toggleBtn = document.getElementById('toggle-history-btn')
@@ -234,6 +254,7 @@
                     if (findBtn) findBtn.removeEventListener('click', findClinics)
                     window.removeEventListener('moodHistoryUpdated', onMoodUpdate)
                     window.removeEventListener('storage', onMoodUpdate)
+                    window.removeEventListener('restoreConversation', onRestore)
                 }
                 // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [])
@@ -246,7 +267,7 @@
             React.useEffect(() => {
                 try {
                     try { renderMoodChart(logs); } catch (e) { console.warn('renderMoodChart not available', e) }
-                    renderLogs(logs)
+                    try { renderLogsList(logs); } catch (e) { console.warn('renderLogsList not available', e) }
                 } catch (e) {
                     // silent fail for render issues
                     console.error('Chart render error', e)
@@ -282,6 +303,17 @@
                 pushUser(text)
                 setInput('')
                 setIsTyping(true)
+                // Quick parse: allow user to send "Mood: <1-5> - optional note" to save directly
+                const moodMatch = (text || '').toString().match(/mood\s*[:\-]?\s*([1-5])(?:\s*[-–—]\s*(.+))?/i)
+                if (moodMatch) {
+                    const mood = Number(moodMatch[1])
+                    const note = moodMatch[2] ? moodMatch[2].trim() : ''
+                    // save immediately
+                    addLog(mood, note)
+                    setIsTyping(false)
+                    pushBot(`Got it — saved your mood (${mood}) to Your Logs.`)
+                    return
+                }
                 setTimeout(() => {
                     setIsTyping(false)
                     const crisis = detectCrisis(text)
@@ -291,9 +323,18 @@
                         return
                     }
 
-                    // natural follow-up: ask how long and whether they want resources
-                    pushBot("Thanks for sharing. Can you tell me how long you've felt like this?", { question: 'duration' })
-                    setAwaiting('duration')
+                    // If the user used the quick-starter "Just checking in", ask for a rating instead of duration
+                    const lastStarter = lastStarterRef.current
+                    if (lastStarter === 'Just checking in') {
+                        pushBot('Thanks for checking in — how would you rate how you feel right now (1 = very bad, 5 = very good)?')
+                        setAwaiting('rate')
+                    } else {
+                        // natural follow-up: ask how long and whether they want resources
+                        pushBot("Thanks for sharing. Can you tell me how long you've felt like this?", { question: 'duration' })
+                        setAwaiting('duration')
+                    }
+                    // clear the starter marker after using it
+                    lastStarterRef.current = null
                 }, 700)
             }
 
@@ -353,9 +394,12 @@
                     // action expected to be rating like '3' or '4'
                     const rating = Number(action)
                     if (!isNaN(rating) && rating >= 1 && rating <= 5) {
-                        addLog(rating, payload || '')
+                        // include current conversation and any starter info when saving
+                        addLog(rating, payload || '', { conversation: messages.slice(), starter: lastStarterRef.current || null })
                         pushUser(`Mood rating: ${rating}`)
                         pushBot('Thanks — saved to your mood history.')
+                        try { if (typeof showToast === 'function') showToast('Rating saved', 'success') } catch (e) {}
+                        try { if (typeof launchConfetti === 'function') launchConfetti(8) } catch (e) {}
                         // ask for quick feedback
                         setTimeout(() => pushBot('Was this helpful? (Yes / No)'), 300)
                         setAwaiting('feedback')
@@ -378,9 +422,20 @@
                 }
             }
 
-            function addLog(mood, note) {
-                const entry = { date: nowDate(), mood: Number(mood), note: note || '' }
-                const next = [...logs, entry]
+            function addLog(mood, note, meta) {
+                const entry = { date: nowDate(), mood: Number(mood), tags: [], notes: note || '' }
+                // attach conversation snapshot and starter label when available
+                if (meta && meta.conversation) entry.conversation = meta.conversation
+                if (meta && meta.starter) entry.starter = meta.starter
+                // avoid duplicate for same day: overwrite if present
+                const existingIndex = logs.findIndex(l => l.date === entry.date)
+                let next = []
+                if (existingIndex !== -1) {
+                    next = logs.slice();
+                    next[existingIndex] = entry;
+                } else {
+                    next = [...logs, entry];
+                }
                 persistLogs(next)
             }
 
@@ -393,7 +448,20 @@
 
             function resetConversation() {
                 if (!confirm('Reset conversation (this will clear chat messages)?')) return
+                // snapshot the conversation into Your Logs before clearing
+                try {
+                    const snapshot = { date: nowDate(), mood: null, tags: [], notes: '', conversation: messages.slice() }
+                    if (currentStarter) snapshot.starter = currentStarter
+                    const next = logs ? logs.slice() : []
+                    // avoid exact-date collision for multiple snapshots in a day
+                    if (next.some(l => l.date === snapshot.date && l.conversation)) {
+                        snapshot.date = snapshot.date + 'T' + Date.now().toString().slice(-5)
+                    }
+                    next.push(snapshot)
+                    persistLogs(next)
+                } catch (e) { console.warn('Could not snapshot conversation', e) }
                 setMessages([])
+                setCurrentStarter(null)
                 pushBot("Conversation reset. I'm here when you need to talk.")
             }
 
@@ -426,111 +494,7 @@
                 }, { timeout: 5000 })
             }
 
-            // Export helpers: CSV and JSON
-            function exportLogsCSV() {
-                const data = (localStorage.getItem(STORAGE_KEY) && safeParse(localStorage.getItem(STORAGE_KEY))) || logs || []
-                if (!data || data.length === 0) { alert('No logs to export'); return }
-                const header = ['date','mood','note']
-                const rows = data.map(r => [r.date, String(r.mood), '"' + (r.note || '').replace(/"/g, '""') + '"'])
-                const csv = [header.join(','), ...rows.map(r => r.join(','))].join('\r\n')
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-                const url = URL.createObjectURL(blob)
-                const a = document.createElement('a')
-                a.href = url
-                a.download = `mindflow-logs-${nowDate()}.csv`
-                document.body.appendChild(a)
-                a.click()
-                a.remove()
-                URL.revokeObjectURL(url)
-            }
-
-            function exportLogsJSON() {
-                const data = (localStorage.getItem(STORAGE_KEY) && safeParse(localStorage.getItem(STORAGE_KEY))) || logs || []
-                if (!data || data.length === 0) { alert('No logs to export'); return }
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-                const url = URL.createObjectURL(blob)
-                const a = document.createElement('a')
-                a.href = url
-                a.download = `mindflow-logs-${nowDate()}.json`
-                document.body.appendChild(a)
-                a.click()
-                a.remove()
-                URL.revokeObjectURL(url)
-            }
-
-            // Simple accessibility audit: tab order check and contrast ratio check for key elements
-            function runAccessibilityAudit() {
-                const reportEl = document.getElementById('accessibility-audit')
-                const issues = []
-                // Tab order: ensure important interactive elements are focusable
-                const selectors = ['#log-mood-btn', '#mind-flow-root input, #mind-flow-root button, #mind-flow-root a', '#view-7-day', '#view-30-day', '#find-support-btn']
-                selectors.forEach(sel => {
-                    try {
-                        const els = document.querySelectorAll(sel)
-                        els.forEach(el => {
-                            if (!(el.tabIndex >= 0 || el.getAttribute('href') || el.disabled === false)) {
-                                issues.push(`Element ${el.tagName} missing focusable attribute or tabindex: ${sel}`)
-                            }
-                        })
-                    } catch (e) {}
-                })
-
-                // Contrast checks for text on primary buttons and chat bubbles (very lightweight: compare luminance)
-                function luminance(hex) {
-                    if (!hex) return 0
-                    hex = hex.replace('#','')
-                    if (hex.length === 3) hex = hex.split('').map(h=>h+h).join('')
-                    const r = parseInt(hex.substring(0,2),16)/255
-                    const g = parseInt(hex.substring(2,4),16)/255
-                    const b = parseInt(hex.substring(4,6),16)/255
-                    const a = [r,g,b].map(c => c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055,2.4))
-                    return 0.2126*a[0] + 0.7152*a[1] + 0.0722*a[2]
-                }
-                function contrast(hex1, hex2) { const L1 = luminance(hex1); const L2 = luminance(hex2); const higher = Math.max(L1,L2); const lower = Math.min(L1,L2); return (higher+0.05)/(lower+0.05) }
-
-                // pick computed styles
-                const primaryBtn = document.querySelector('.primary-btn')
-                const bodyBg = window.getComputedStyle(document.body).backgroundColor || '#ffffff'
-                // try to convert rgb(...) to hex
-                function rgbToHex(rgb) {
-                    const m = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
-                    if (!m) return null
-                    return '#' + [1,2,3].map(i=>Number(m[i]).toString(16).padStart(2,'0')).join('')
-                }
-                try {
-                    if (primaryBtn) {
-                        const fg = window.getComputedStyle(primaryBtn).color
-                        const bg = window.getComputedStyle(primaryBtn).backgroundColor
-                        const fgHex = rgbToHex(fg) || '#000000'
-                        const bgHex = rgbToHex(bg) || '#ffffff'
-                        const c = contrast(fgHex, bgHex)
-                        if (c < 4.5) issues.push(`Low contrast on primary button: ${c.toFixed(2)}:1 (expected >= 4.5)`) 
-                    }
-                } catch (e) {}
-
-                // simple tab order sanity: ensure first focusable is skip link
-                const firstFocusable = document.querySelector('a.skip-link, button, [tabindex], input, select, textarea')
-                if (firstFocusable && firstFocusable.classList && firstFocusable.classList.contains('skip-link') === false) {
-                    issues.push('First focusable element is not the skip-link; consider placing skip link first for keyboard users.')
-                }
-
-                // render report
-                if (!reportEl) return alert('Audit: ' + (issues.length ? issues.join('\n') : 'No issues found.'))
-                reportEl.innerHTML = ''
-                const title = document.createElement('div')
-                title.style.fontWeight = '700'
-                title.textContent = 'Accessibility audit results:'
-                reportEl.appendChild(title)
-                if (issues.length === 0) {
-                    const ok = document.createElement('div')
-                    ok.textContent = 'No immediate issues found with quick checks.'
-                    reportEl.appendChild(ok)
-                } else {
-                    const ul = document.createElement('ul')
-                    issues.forEach(i => { const li = document.createElement('li'); li.textContent = i; ul.appendChild(li) })
-                    reportEl.appendChild(ul)
-                }
-            }
+            
 
             // render UI
             return (
@@ -545,11 +509,13 @@
                             <div style={{ fontSize: '13px', color: '#666', marginBottom: '6px' }}>Start quickly</div>
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                 {startOptions.map((opt, i) => (
-                                    <button key={i} onClick={() => { setInput(opt.text); setTimeout(() => handleSendText(opt.text), 200) }} className="control-btn" tabIndex={0} aria-label={`Quick start: ${opt.label}`}>{opt.label}</button>
+                                    <button key={i} onClick={() => { lastStarterRef.current = opt.label; setCurrentStarter(opt.label); setInput(opt.text); setTimeout(() => handleSendText(opt.text), 200) }} className="control-btn" tabIndex={0} aria-label={`Quick start: ${opt.label}`}>{opt.label}</button>
                                 ))}
                             </div>
+                            {currentStarter && (
+                                <div style={{ marginTop: '8px', fontSize: '13px', color: '#666' }} aria-live="polite">Started with: <strong>{currentStarter}</strong></div>
+                            )}
                         </div>
-
                         <div ref={scrollRef} style={{ maxHeight: '320px', overflowY: 'auto', padding: '8px', background: '#fafafa', borderRadius: '6px', border: '1px solid #eee' }}>
                             {messages.length === 0 && <div style={{ textAlign: 'center', color: '#888', padding: '40px 0' }}>Type a message to begin — I’ll ask a few short questions to help.</div>}
                             {messages.map((m, idx) => (
@@ -599,17 +565,12 @@
                     {/* Controls for Mood Trends & Logs (actual chart and logs are in the page section above) */}
                         <div style={{ marginTop: '18px' }}>
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            <button onClick={() => setChartWindow('7')} className="control-btn" tabIndex={0}>7-Day</button>
-                            <button onClick={() => setChartWindow('30')} className="control-btn" tabIndex={0}>30-Day</button>
-                            <button onClick={() => setChartWindow('all')} className="control-btn" tabIndex={0}>All</button>
+                            {/* Chart window controls removed from Mind Flow UI. Use the 'Your Mood Trends' section above. */}
                             <button onClick={clearLogs} className="secondary-btn" tabIndex={0}>Clear logs</button>
                             <button onClick={resetConversation} className="control-btn" tabIndex={0}>Reset chat</button>
-                            <button onClick={() => exportLogsCSV()} className="control-btn" tabIndex={0} aria-label="Export logs as CSV">Export CSV</button>
-                            <button onClick={() => exportLogsJSON()} className="control-btn" tabIndex={0} aria-label="Export logs as JSON">Export JSON</button>
-                            <button onClick={() => runAccessibilityAudit()} className="control-btn" tabIndex={0} aria-label="Run accessibility audit">Run a11y audit</button>
                             <div style={{ marginLeft: 'auto', color: '#666', fontSize: '13px' }}>Use the "Your Mood Trends" section above for chart and log details.</div>
                         </div>
-                        <div id="accessibility-audit" className="audit-report" aria-live="polite" style={{ marginTop: '8px' }}></div>
+                        
                     </div>
                 </div>
             )
