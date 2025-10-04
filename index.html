@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Daily Mood Log - Accessible Mental Health Tool</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <!-- Note: The React MVP has been moved to the Vite app under mvp-app/. Remove the in-page demo to keep this page lightweight. -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -72,6 +73,17 @@
                 <button type="submit" id="log-mood-btn" class="primary-btn">Log My Mood</button>
             </form>
         </section>
+
+                <!-- Embedded React MVP section -->
+                <section id="mvp-section" class="card">
+                        <div id="mvp-root">
+                            <div class="mvp-placeholder">
+                                <h3>Mental Health MVP</h3>
+                                <p class="text-muted">The interactive AI demo has been moved to a standalone Vite app for development and better tooling.</p>
+                                <p class="text-muted">Run the Vite app in <code>mvp-app/</code> (see <code>mvp-app/README.md</code>) and open <code>http://localhost:5173</code>.</p>
+                            </div>
+                        </div>
+                </section>
 
         <aside id="resource-banner" class="alert-banner hidden" role="alert" aria-live="polite">
             <p>It looks like you've logged a challenging mood pattern. <strong>Immediate, affordable support is available.</strong></p>
@@ -144,5 +156,6 @@
     </nav>
 
     <script src="script.js"></script>
+        <!-- The full interactive demo has been moved into the Vite app at mvp-app/ for development. -->
 </body>
 </html>
