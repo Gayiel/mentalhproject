@@ -1,583 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Daily Mood Log - Accessible Mental Health Tool</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- keep site styling from style.css for cohesive look -->
-</head>
-<body>
-    <a class="skip-link" href="#mind-flow-root">Skip to main content</a>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Mind Flow — MoodHouse</title>
+        <link rel="stylesheet" href="style.css" />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+        <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+        <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+        <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <a class="skip-link" href="#mind-flow-root">Skip to main content</a>
 
-    <header class="topbar" role="banner" aria-label="Top navigation">
-        <div class="topbar-left">
-            <div class="avatar" aria-hidden="true">MH</div>
-            <div class="brand">
-                <strong class="brand-title">MoodHouse</strong>
-                <span class="brand-sub">Daily Check-in</span>
+        <header class="topbar" role="banner" aria-label="Top navigation">
+            <div class="topbar-left">
+                <div class="avatar" aria-hidden="true">MH</div>
+                <div class="brand">
+                    <strong class="brand-title">MoodHouse</strong>
+                    <span class="brand-sub">Daily Check-in</span>
+                </div>
             </div>
-        </div>
-        <nav class="top-actions" aria-label="Profile actions">
-            <button id="toggle-soft-btn" class="control-btn" aria-pressed="false" title="Toggle softer colors">Softer colors</button>
-            <button class="icon-btn" aria-label="Settings">⚙️</button>
-        </nav>
-    </header>
+            <nav class="top-actions" aria-label="Profile actions">
+                <button id="toggle-soft-btn" class="control-btn" aria-pressed="false" title="Toggle softer colors">Softer colors</button>
+                <button class="icon-btn" aria-label="Settings">⚙️</button>
+            </nav>
+        </header>
 
         <div class="site-hero">
-            <h1>MoodHouse</h1>
+            <h1>Mind Flow</h1>
             <p>A private, accessible place to track how you feel and find guidance when needed.</p>
         </div>
 
         <main id="mood-app-container">
 
-        <section id="mood-logger" aria-labelledby="logger-title" class="card">
-            <h2 id="logger-title">How are you feeling today?</h2>
-            <form id="mood-log-form">
-                <p class="date-display">Today's Date: <time id="current-date" datetime=""></time></p>
+            <!-- Mind Flow replaces the old 'How are you feeling today?' logger -->
+            <section id="mind-flow" aria-labelledby="mind-flow-title" class="card">
+                <h2 id="mind-flow-title">Mind Flow</h2>
+                <div id="mind-flow-root"></div>
+            </section>
 
-                <fieldset class="mood-scale" role="radiogroup" aria-label="Select your current mood" tabindex="0">
-                    <legend class="sr-only">Mood Selection</legend>
-                    <div class="mood-options">
-                        <input type="radio" id="mood-vgood" name="mood" value="5" required>
-                        <label for="mood-vgood" class="mood-label" data-mood="5" aria-label="Mood: Very Good">✨ Very Good</label>
-                        <input type="radio" id="mood-good" name="mood" value="4">
-                        <label for="mood-good" class="mood-label" data-mood="4" aria-label="Mood: Good">😊 Good</label>
-                        <input type="radio" id="mood-neutral" name="mood" value="3">
-                        <label for="mood-neutral" class="mood-label" data-mood="3" aria-label="Mood: Neutral">😐 Neutral</label>
-                        <input type="radio" id="mood-bad" name="mood" value="2">
-                        <label for="mood-bad" class="mood-label" data-mood="2" aria-label="Mood: Bad">🙁 Bad</label>
-                        <input type="radio" id="mood-vbad" name="mood" value="1">
-                        <label for="mood-vbad" class="mood-label" data-mood="1" aria-label="Mood: Very Bad">😔 Very Bad</label>
+            <aside id="resource-banner" class="alert-banner hidden" role="alert" aria-live="polite">
+                <p>It looks like you've logged a challenging mood pattern. <strong>Immediate, affordable support is available.</strong></p>
+                <a href="resources.html" class="secondary-btn">Access Guided Resources</a>
+            </aside>
+
+            <section id="mood-history" aria-labelledby="history-title" class="card">
+                <div class="history-header" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                    <h2 id="history-title" style="margin:0">Your Mood Trends</h2>
+                    <div>
+                        <button id="toggle-history-btn" class="control-btn" aria-expanded="true" aria-controls="mood-chart-container log-list">Collapse</button>
                     </div>
-                </fieldset>
-
-                <div class="input-group">
-                    <label for="activity-tags">What contributed to this mood? (Separate with commas)</label>
-                    <input type="text" id="activity-tags" placeholder="E.g., Slept well, Stress at work, Socialized">
                 </div>
 
-                <div class="input-group">
-                    <label for="mood-notes">Optional Contextual Notes</label>
-                    <textarea id="mood-notes" rows="3" aria-describedby="notes-help"></textarea>
-                    <small id="notes-help" class="hint-text">Keep it brief and focused on the facts.</small>
+                <div class="filter-controls">
+                    <button id="view-7-day" class="control-btn active" aria-controls="mood-chart">7-Day Trend</button>
+                    <button id="view-30-day" class="control-btn" aria-controls="mood-chart">Monthly Summary</button>
+                    <button id="find-support-btn" class="control-btn" type="button">Find Nearby Support</button>
                 </div>
 
-                <button type="submit" id="log-mood-btn" class="primary-btn">Log My Mood</button>
-            </form>
-        </section>
-
-        <section id="mind-flow" aria-labelledby="mind-flow-title" class="card">
-            <div id="mind-flow-root"></div>
-        </section>
-
-
-
-        <aside id="resource-banner" class="alert-banner hidden" role="alert" aria-live="polite">
-            <p>It looks like you've logged a challenging mood pattern. <strong>Immediate, affordable support is available.</strong></p>
-            <a href="resources.html" class="secondary-btn">Access Guided Resources</a>
-        </aside>
-
-        <section id="mood-history" aria-labelledby="history-title" class="card">
-                        <div class="history-header" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-                            <h2 id="history-title" style="margin:0">Your Mood Trends</h2>
-                            <div>
-                                <button id="toggle-history-btn" class="control-btn" aria-expanded="true" aria-controls="mood-chart-container log-list">Collapse</button>
-                            </div>
-                        </div>
-            <div class="filter-controls">
-                <button id="view-7-day" class="control-btn active" aria-controls="mood-chart">7-Day Trend</button>
-                <button id="view-30-day" class="control-btn" aria-controls="mood-chart">Monthly Summary</button>
-                <button id="find-support-btn" class="control-btn" type="button">Find Nearby Support</button>
-            </div>
-            
-            <div id="mood-chart-container" class="chart-container">
-                <canvas id="mood-chart" role="img" aria-label="Interactive line graph displaying your daily average mood score." aria-describedby="chart-desc"></canvas>
-                <p id="chart-desc" class="sr-only">This chart shows the recent trend of your daily mood scores. Higher values represent better mood.</p>
-                <div id="no-data" class="no-data" aria-hidden="true">No mood logs yet. Use the form above to record your first check-in.</div>
-            </div>
-
-            <!-- Log list: users can review and delete past entries -->
-            <div id="log-list" class="card" aria-live="polite">
-                <h3>Your Logs</h3>
-                <div id="logs-container">
-                    <p class="text-muted">No logs yet. Your entries will appear here.</p>
+                <div id="mood-chart-container" class="chart-container">
+                    <canvas id="mood-chart" role="img" aria-label="Interactive line graph displaying your daily average mood score." aria-describedby="chart-desc"></canvas>
+                    <p id="chart-desc" class="sr-only">This chart shows the recent trend of your daily mood scores. Higher values represent better mood.</p>
+                    <div id="no-data" class="no-data" aria-hidden="true">No mood logs yet. Your entries will appear here.</div>
                 </div>
-            </div>
-        </section>
 
-    </main>
-
-    <footer class="page-footer" role="contentinfo">
-        <p>Private &middot; For self-reflection and to help connect to resources when needed.</p>
-    </footer>
-
-    <!-- Toast / transient feedback area -->
-    <div id="toast-area" aria-live="polite" aria-atomic="true"></div>
-
-    <!-- Settings modal (hidden by default) -->
-    <div id="settings-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-        <div class="modal-content card">
-            <h3 id="settings-title">Settings</h3>
-            <p class="text-muted">Small preferences for MoodHouse.</p>
-            <div style="display:flex; gap:8px; margin-top:10px; align-items:center;">
-                <label for="hotline-region" class="text-muted" style="font-weight:700; margin-right:8px;">Hotline region</label>
-                <select id="hotline-region" aria-label="Select hotline region">
-                    <option value="us">United States (SAMHSA)</option>
-                    <option value="uk">United Kingdom (Samaritans)</option>
-                    <option value="au">Australia (Lifeline)</option>
-                </select>
-                <div style="margin-left:auto; display:flex; gap:8px;">
-                    <button id="settings-close" class="control-btn">Close</button>
-                    <button id="settings-about" class="secondary-btn">About</button>
+                <div id="log-list" class="card" aria-live="polite">
+                    <h3>Your Logs</h3>
+                    <div id="logs-container">
+                        <p class="text-muted">No logs yet. Your entries will appear here.</p>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
+            </section>
 
-    <!-- Bottom navigation: Instagram-style quick access -->
-    <nav id="bottom-nav" class="bottom-nav" role="navigation" aria-label="Main navigation">
-        <button class="nav-btn active" data-target="mood-logger" aria-label="Home">🏠<span class="nav-label">Home</span></button>
-        <button class="nav-btn" data-target="mood-logger" aria-label="Log">✍️<span class="nav-label">Log</span></button>
-        <button class="nav-btn" data-target="mood-history" aria-label="Trends">📈<span class="nav-label">Trends</span></button>
-    <button class="nav-btn" data-href="resources.html" aria-label="Resources">🔗<span class="nav-label">Resources</span></button>
-    </nav>
+        </main>
 
-    <script src="script.js"></script>
-    <script type="text/babel">
-    const STORAGE_KEY = 'accessibleMoodHistory'
-        const API_URL = 'http://127.0.0.1:5000/evaluate'
-        const FETCH_TIMEOUT_MS = 5000
+        <footer class="page-footer" role="contentinfo">
+            <p>Private &middot; For self-reflection and to help connect to resources when needed.</p>
+        </footer>
 
-        function safeParse(json) {
-            try { return JSON.parse(json) } catch (e) { return null }
-        }
+        <div id="toast-area" aria-live="polite" aria-atomic="true"></div>
 
-        function nowDate() { return new Date().toISOString().slice(0, 10) }
+        <script src="script.js"></script>
 
-        function MindFlow() {
-            const [logs, setLogs] = React.useState(() => {
-                const raw = localStorage.getItem(STORAGE_KEY)
-                return safeParse(raw) || []
-            })
-            const [chartWindow, setChartWindow] = React.useState('all') // 'all' | '7' | '30'
+        <!-- Mind Flow React component (Babel) -->
+        <script type="text/babel">
+        // Mind Flow component — single copy
+        const STORAGE_KEY = 'accessibleMoodHistory';
+        function safeParse(json){ try { return JSON.parse(json) } catch(e) { return null } }
+        function nowDate(){ return new Date().toISOString().slice(0,10) }
+
+        function MindFlow(){
+            const [logs, setLogs] = React.useState(() => safeParse(localStorage.getItem(STORAGE_KEY)) || [])
             const [input, setInput] = React.useState('')
             const [messages, setMessages] = React.useState([])
             const [isTyping, setIsTyping] = React.useState(false)
-            const [awaiting, setAwaiting] = React.useState(null) // follow-up step
             const [currentStarter, setCurrentStarter] = React.useState(null)
             const scrollRef = React.useRef(null)
-            const chartRef = React.useRef(null)
             const lastStarterRef = React.useRef(null)
 
             const startOptions = [
-                { label: "Just checking in", text: "Just checking in — wondering how I'm doing today." },
-                { label: "Feeling stressed", text: "I've been feeling stressed and overwhelmed." },
-                { label: "Feeling low", text: "Lately I've been feeling a bit low and unmotivated." },
-                { label: "Need urgent help", text: "I might need urgent help — I'm worried about my safety." }
+                { label: 'Just checking in', text: "Just checking in — wondering how I'm doing today." },
+                { label: 'Feeling stressed', text: "I've been feeling stressed and overwhelmed." },
+                { label: 'Feeling low', text: "Lately I've been feeling a bit low and unmotivated." },
+                { label: 'Need urgent help', text: "I might need urgent help — I'm worried about my safety." }
             ]
 
-            // Utility: save logs and update chart (use page-level renderers)
-            function persistLogs(next) {
+            function persistLogs(next){
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
                 setLogs(next)
-                // use the page-level render functions from script.js
-                try { renderMoodChart(next); } catch (e) { console.warn('renderMoodChart not available yet', e) }
-                try { renderLogsList(next); } catch (e) { console.warn('renderLogsList not available yet', e) }
-                // dispatch update so other components (and other tabs) can sync
-                try { window.dispatchEvent(new CustomEvent('moodHistoryUpdated', { detail: next })) } catch (e) {}
-                // small UX: try to scroll logs into view and show a toast if available
-                try {
-                    const logsEl = document.getElementById('logs-container')
-                    if (logsEl) { logsEl.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
-                } catch (e) {}
-                try { if (typeof showToast === 'function') showToast('Saved to Your Logs') } catch (e) {}
+                try{ if (typeof renderMoodChart === 'function') renderMoodChart(next) } catch(e){}
+                try{ if (typeof renderLogsList === 'function') renderLogsList(next) } catch(e){}
+                try{ window.dispatchEvent(new CustomEvent('moodHistoryUpdated',{detail: next})) } catch(e){}
+                try{ if (typeof showToast === 'function') showToast('Saved to Your Logs') } catch(e){}
             }
 
-            React.useEffect(() => {
-                // initial bot greeting
-                pushBot("Hi — I'm Mind Flow. How can I help you today? You can say anything or try one of the quick starters below.")
-                try { renderMoodChart(logs); } catch (e) { console.warn('renderMoodChart not available', e) }
-                try { renderLogsList(logs); } catch (e) { console.warn('renderLogsList not available', e) }
+            React.useEffect(()=>{
+                pushBot("Hi — I'm Mind Flow. How can I help you today? You can try one of the quick starters below.")
+                try{ if (typeof renderMoodChart === 'function') renderMoodChart(logs) } catch(e){}
+                try{ if (typeof renderLogsList === 'function') renderLogsList(logs) } catch(e){}
 
-                // listen to updates from other UI (form/script.js)
-                function onMoodUpdate(e) {
+                function onMoodUpdate(e){
                     const next = (e && e.detail) ? e.detail : safeParse(localStorage.getItem(STORAGE_KEY)) || []
                     setLogs(next)
-                    try { renderMoodChart(next); } catch (err) {}
-                    try { renderLogsList(next); } catch (err) {}
+                    try{ if (typeof renderMoodChart === 'function') renderMoodChart(next) } catch(e){}
+                    try{ if (typeof renderLogsList === 'function') renderLogsList(next) } catch(e){}
                 }
                 window.addEventListener('moodHistoryUpdated', onMoodUpdate)
                 window.addEventListener('storage', onMoodUpdate)
-                // allow restoring a saved conversation from the logs preview
-                function onRestore(e) {
-                    const entry = (e && e.detail) ? e.detail : null
-                    if (!entry) return
-                    if (entry.conversation && Array.isArray(entry.conversation)) {
-                        try { setMessages(entry.conversation) } catch (er) {}
-                        try { setCurrentStarter(entry.starter || null) } catch (er) {}
-                    }
-                }
-                window.addEventListener('restoreConversation', onRestore)
-
-                // Wire existing page controls: collapse, view filters, find support
-                const toggleBtn = document.getElementById('toggle-history-btn')
-                const view7 = document.getElementById('view-7-day')
-                const view30 = document.getElementById('view-30-day')
-                const findBtn = document.getElementById('find-support-btn')
-                function onToggle() {
-                    const chartContainer = document.getElementById('mood-chart-container')
-                    const list = document.getElementById('log-list')
-                    if (!chartContainer || !list) return
-                    const hidden = chartContainer.style.display === 'none'
-                    chartContainer.style.display = hidden ? 'block' : 'none'
-                    list.style.display = hidden ? 'block' : 'none'
-                    if (toggleBtn) toggleBtn.textContent = hidden ? 'Collapse' : 'Expand'
-                }
-                function onView7() { setChartWindow('7') }
-                function onView30() { setChartWindow('30') }
-                function onViewAll() { setChartWindow('all') }
-                if (toggleBtn) toggleBtn.addEventListener('click', onToggle)
-                if (view7) view7.addEventListener('click', onView7)
-                if (view30) view30.addEventListener('click', onView30)
-                if (findBtn) findBtn.addEventListener('click', findClinics)
-
-                return () => {
-                    if (toggleBtn) toggleBtn.removeEventListener('click', onToggle)
-                    if (view7) view7.removeEventListener('click', onView7)
-                    if (view30) view30.removeEventListener('click', onView30)
-                    if (findBtn) findBtn.removeEventListener('click', findClinics)
+                window.addEventListener('restoreConversation', (e)=>{
+                    const entry = e && e.detail ? e.detail : null
+                    if (entry && entry.conversation) setMessages(entry.conversation)
+                })
+                return ()=>{
                     window.removeEventListener('moodHistoryUpdated', onMoodUpdate)
                     window.removeEventListener('storage', onMoodUpdate)
-                    window.removeEventListener('restoreConversation', onRestore)
                 }
-                // eslint-disable-next-line react-hooks/exhaustive-deps
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [])
 
-            React.useEffect(() => {
-                if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-            }, [messages, isTyping])
+            React.useEffect(()=>{ if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight }, [messages, isTyping])
 
-            // keep chart and logs in sync when data or window changes
-            React.useEffect(() => {
-                try {
-                    try { renderMoodChart(logs); } catch (e) { console.warn('renderMoodChart not available', e) }
-                    try { renderLogsList(logs); } catch (e) { console.warn('renderLogsList not available', e) }
-                } catch (e) {
-                    // silent fail for render issues
-                    console.error('Chart render error', e)
-                }
-            }, [logs, chartWindow])
-
-            function pushUser(text) {
-                setMessages(prev => [...prev, { type: 'user', text }])
-            }
-            function pushBot(text, meta) {
-                setMessages(prev => [...prev, { type: 'bot', text, meta }])
-            }
+            function pushUser(text){ setMessages(prev=>[...prev,{type:'user', text}]) }
+            function pushBot(text, meta){ setMessages(prev=>[...prev,{type:'bot', text, meta}]) }
 
             const crisisPatterns = ['kill myself','end my life','suicide','hurt myself','cutting','no reason to live','i might harm']
-            function detectCrisis(text) {
-                const lt = (text||'').toLowerCase()
-                return crisisPatterns.some(p => lt.includes(p))
-            }
+            function detectCrisis(text){ const lt=(text||'').toLowerCase(); return crisisPatterns.some(p => lt.includes(p)) }
 
-            function handleSendText(rawText) {
-                const text = rawText || input
-                if (!text || !text.trim()) return
-                // detect reset/start-over phrases
-                const lower = text.toLowerCase()
-                if (lower.includes('reset') || lower.includes('start over') || lower.includes('clear conversation')) {
-                    // ask confirmation
-                    pushUser(text)
-                    pushBot('Do you want to reset this conversation? This will clear messages but keep your saved mood logs. Reply Yes to confirm.', { confirmReset: true })
-                    setAwaiting('confirm_reset')
-                    setInput('')
-                    return
-                }
-                pushUser(text)
-                setInput('')
-                setIsTyping(true)
-                // Quick parse: allow user to send "Mood: <1-5> - optional note" to save directly
-                const moodMatch = (text || '').toString().match(/mood\s*[:\-]?\s*([1-5])(?:\s*[-–—]\s*(.+))?/i)
-                if (moodMatch) {
-                    const mood = Number(moodMatch[1])
-                    const note = moodMatch[2] ? moodMatch[2].trim() : ''
-                    // save immediately
-                    addLog(mood, note)
-                    setIsTyping(false)
-                    pushBot(`Got it — saved your mood (${mood}) to Your Logs.`)
-                    return
-                }
-                setTimeout(() => {
-                    setIsTyping(false)
-                    const crisis = detectCrisis(text)
-                    if (crisis) {
-                        pushBot("I'm worried by what you shared. If you're in immediate danger, please call emergency services now. Would you like quick resources or to find clinics nearby?", { crisis: true })
-                        setAwaiting('offer_clinic')
-                        return
-                    }
-
-                    // If the user used the quick-starter "Just checking in", ask for a rating instead of duration
-                    const lastStarter = lastStarterRef.current
-                    if (lastStarter === 'Just checking in') {
-                        pushBot('Thanks for checking in — how would you rate how you feel right now (1 = very bad, 5 = very good)?')
-                        setAwaiting('rate')
-                    } else {
-                        // natural follow-up: ask how long and whether they want resources
-                        pushBot("Thanks for sharing. Can you tell me how long you've felt like this?", { question: 'duration' })
-                        setAwaiting('duration')
-                    }
-                    // clear the starter marker after using it
-                    lastStarterRef.current = null
-                }, 700)
-            }
-
-            // confirm reset handling
-            if (awaiting === 'confirm_reset') {
-                // handled inside handleFollowUp when user replies 'yes' or 'no'
-            }
-
-            function handleFollowUp(action, payload) {
-                const actLower = (action || '').toString().toLowerCase()
-                // handle explicit confirm reset
-                if (awaiting === 'confirm_reset') {
-                    if (actLower.includes('yes') || actLower === 'y' || actLower.includes('confirm')) {
-                        // reset conversation messages, keep logs
-                        setMessages([])
-                        pushBot("Conversation reset. I'm here when you need to talk.")
-                        setAwaiting(null)
-                        return
-                    } else {
-                        pushBot('Okay — I will keep the current conversation.')
-                        setAwaiting(null)
-                        return
-                    }
-                }
-                if (awaiting === 'duration') {
-                    pushUser(action)
-                    pushBot("Thanks. Would you like suggestions to cope right now, or help finding nearby clinics/services?", { question: 'help_type' })
-                    setAwaiting('help_type')
-                    return
-                }
-                if (awaiting === 'help_type') {
-                    pushUser(action)
-                    if (action.toLowerCase().includes('near')) {
-                        // try geolocation then open maps search
-                        findClinics()
-                        pushBot('Looking for nearby clinics. If location is blocked, I can show links instead.')
-                        setAwaiting(null)
-                    } else {
-                        pushBot('Here are a few coping suggestions you can try now: take three deep breaths, step outside for five minutes, or text a friend. Would you like to rate how you feel right now (1 = very bad, 5 = very good)?')
-                        setAwaiting('rate')
-                    }
-                    return
-                }
-                if (awaiting === 'offer_clinic') {
-                    pushUser(action)
-                    if (action.toLowerCase().includes('yes') || action.toLowerCase().includes('clinic') || action.toLowerCase().includes('near')) {
-                        findClinics()
-                        pushBot('Searching for local clinics. If you prefer, tell me your city or postcode.')
-                    } else {
-                        pushBot('Okay. If you change your mind, I can help find resources. Would you like some coping tips now?')
-                        setAwaiting('rate')
-                    }
-                    setAwaiting(null)
-                    return
-                }
-                if (awaiting === 'rate') {
-                    // action expected to be rating like '3' or '4'
-                    const rating = Number(action)
-                    if (!isNaN(rating) && rating >= 1 && rating <= 5) {
-                        // include current conversation and any starter info when saving
-                        addLog(rating, payload || '', { conversation: messages.slice(), starter: lastStarterRef.current || null })
-                        pushUser(`Mood rating: ${rating}`)
-                        pushBot('Thanks — saved to your mood history.')
-                        try { if (typeof showToast === 'function') showToast('Rating saved', 'success') } catch (e) {}
-                        try { if (typeof launchConfetti === 'function') launchConfetti(8) } catch (e) {}
-                        // ask for quick feedback
-                        setTimeout(() => pushBot('Was this helpful? (Yes / No)'), 300)
-                        setAwaiting('feedback')
-                    } else {
-                        pushBot('Please choose a rating from 1 to 5.')
-                    }
-                    setAwaiting(null)
-                    return
-                }
-                if (awaiting === 'feedback') {
-                    if (actLower.includes('yes')) {
-                        pushUser(action)
-                        pushBot('Thanks — glad it helped.')
-                    } else if (actLower.includes('no')) {
-                        pushUser(action)
-                        pushBot('Thanks for the feedback — I will try to do better. You can tell me more if you want.')
-                    }
-                    setAwaiting(null)
-                    return
-                }
-            }
-
-            function addLog(mood, note, meta) {
-                const entry = { date: nowDate(), mood: Number(mood), tags: [], notes: note || '' }
-                // attach conversation snapshot and starter label when available
+            function addLog(mood, note, meta){
+                const entry = { date: nowDate(), mood: Number(mood), tags: (meta && meta.tags) || [], notes: note || '' }
                 if (meta && meta.conversation) entry.conversation = meta.conversation
                 if (meta && meta.starter) entry.starter = meta.starter
-                // avoid duplicate for same day: overwrite if present
-                const existingIndex = logs.findIndex(l => l.date === entry.date)
-                let next = []
-                if (existingIndex !== -1) {
-                    next = logs.slice();
-                    next[existingIndex] = entry;
-                } else {
-                    next = [...logs, entry];
-                }
+                const existing = logs.findIndex(l => l.date === entry.date)
+                const next = existing !== -1 ? logs.slice().map((v,i)=> i===existing?entry:v) : [...logs, entry]
                 persistLogs(next)
             }
 
-            // explicit controls for clearing logs and resetting conversation
-            function clearLogs() {
-                if (!confirm('Clear all saved mood logs? This cannot be undone.')) return
-                persistLogs([])
-                pushBot('Your saved mood logs have been cleared.')
+            function handleSendText(raw){
+                const text = raw || input
+                if (!text || !text.trim()) return
+                pushUser(text)
+                setInput('')
+                setIsTyping(true)
+                const moodMatch = (text||'').match(/mood\s*[:\-]?\s*([1-5])(?:\s*[-–—]\s*(.+))?/i)
+                if (moodMatch){ addLog(Number(moodMatch[1]), moodMatch[2] ? moodMatch[2].trim() : '', { conversation: messages.slice(), starter: lastStarterRef.current }); setIsTyping(false); pushBot('Saved to Your Logs.'); return }
+                setTimeout(()=>{
+                    setIsTyping(false)
+                    if (detectCrisis(text)){ pushBot("I'm worried by what you shared. If you're in immediate danger, call emergency services."); return }
+                    pushBot('Thanks for sharing — can you tell me how long you\'ve felt like this?')
+                    lastStarterRef.current = null
+                }, 600)
             }
 
-            function resetConversation() {
-                if (!confirm('Reset conversation (this will clear chat messages)?')) return
-                // snapshot the conversation into Your Logs before clearing
-                try {
-                    const snapshot = { date: nowDate(), mood: null, tags: [], notes: '', conversation: messages.slice() }
-                    if (currentStarter) snapshot.starter = currentStarter
-                    const next = logs ? logs.slice() : []
-                    // avoid exact-date collision for multiple snapshots in a day
-                    if (next.some(l => l.date === snapshot.date && l.conversation)) {
-                        snapshot.date = snapshot.date + 'T' + Date.now().toString().slice(-5)
-                    }
-                    next.push(snapshot)
-                    persistLogs(next)
-                } catch (e) { console.warn('Could not snapshot conversation', e) }
-                setMessages([])
-                setCurrentStarter(null)
-                pushBot("Conversation reset. I'm here when you need to talk.")
+            function handleInlineFormSubmit(e){
+                e && e.preventDefault && e.preventDefault()
+                const mood = document.querySelector('input[name="mf-mood"]:checked')
+                const tags = (document.getElementById('mf-tags') && document.getElementById('mf-tags').value) || ''
+                const notes = (document.getElementById('mf-notes') && document.getElementById('mf-notes').value) || ''
+                if (!mood){ try{ if (typeof showToast === 'function') showToast('Select a mood before saving', 'warn') } catch(e){}; return }
+                addLog(Number(mood.value), notes, { conversation: messages.slice(), starter: currentStarter, tags: tags.split(',').map(t=>t.trim()).filter(Boolean) })
+                try{ if (typeof showToast === 'function') showToast('Check-in saved', 'success') } catch(e){}
             }
 
-            // rely on page-level renderLogsList to populate #logs-container
+            function clearLogs(){ if (!confirm('Clear all saved mood logs?')) return; persistLogs([]); pushBot('Your saved mood logs have been cleared.') }
+            function resetConversation(){ if (!confirm('Reset conversation?')) return; try { const snapshot = { date: nowDate(), mood: null, notes: '', conversation: messages.slice() }; persistLogs([...logs, snapshot]) } catch (e){}; setMessages([]); pushBot('Conversation reset.') }
 
-            function filterLogsByWindow(list, windowKey) {
-                if (!list || list.length === 0) return []
-                if (windowKey === 'all') return list
-                const days = windowKey === '7' ? 7 : 30
-                const cutoff = new Date()
-                cutoff.setDate(cutoff.getDate() - (days - 1))
-                return list.filter(l => new Date(l.date) >= cutoff)
-            }
-
-            // chart rendering handled by page script's renderMoodChart
-
-            function findClinics() {
-                // try geolocation; if available open Google Maps search
-                if (!navigator.geolocation) {
-                    window.open('https://www.google.com/search?q=mental+health+clinic+near+me', '_blank')
-                    return
-                }
-                navigator.geolocation.getCurrentPosition((pos) => {
-                    const { latitude, longitude } = pos.coords
-                    const url = `https://www.google.com/maps/search/mental+health+clinic/@${latitude},${longitude},12z`;
-                    window.open(url, '_blank')
-                }, (err) => {
-                    // fallback search
-                    window.open('https://www.google.com/search?q=mental+health+clinic+near+me', '_blank')
-                }, { timeout: 5000 })
-            }
-
-            
-
-            // render UI
             return (
-                <div className="mindflow-container" style={{ maxWidth: '900px', margin: '0 auto' }}>
-                    <div style={{ marginBottom: '12px' }}>
-                        <h2 style={{ margin: 0 }}>Mind Flow</h2>
+                <div className="mindflow-container">
+                    <div style={{ marginBottom: 12 }}>
+                        <h3 style={{ margin: 0 }}>Mind Flow</h3>
                         <p className="text-muted">A calm place to share — I'll ask a few gentle questions and help find resources if needed.</p>
                     </div>
 
-                    <div className="card" style={{ padding: '12px' }}>
-                        <div style={{ marginBottom: '8px' }}>
-                            <div style={{ fontSize: '13px', color: '#666', marginBottom: '6px' }}>Start quickly</div>
-                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                {startOptions.map((opt, i) => (
-                                    <button key={i} onClick={() => { lastStarterRef.current = opt.label; setCurrentStarter(opt.label); setInput(opt.text); setTimeout(() => handleSendText(opt.text), 200) }} className="control-btn" tabIndex={0} aria-label={`Quick start: ${opt.label}`}>{opt.label}</button>
+                    <div className="card" style={{ padding: 12 }}>
+                        <form onSubmit={handleInlineFormSubmit} aria-label="Inline mood logger" style={{ display: 'grid', gap: 8 }}>
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                <div style={{ fontWeight: 800 }}>Quick check-in</div>
+                                <div style={{ display: 'flex', gap: 8 }}>
+                                    {[5,4,3,2,1].map(v => (
+                                        <label key={v} className={"control-btn"} style={{ padding: '6px 10px', borderRadius: 8 }}>
+                                            <input type="radio" name="mf-mood" value={v} style={{ display: 'none' }} />{v}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                            <input id="mf-tags" placeholder="Tags (comma separated)" aria-label="Tags" />
+                            <textarea id="mf-notes" rows={2} placeholder="Optional note" aria-label="Notes" />
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <button type="submit" className="primary-btn">Save check-in</button>
+                                <button type="button" onClick={() => { document.getElementById('mf-notes').value=''; document.getElementById('mf-tags').value=''; }}>Clear</button>
+                            </div>
+                        </form>
+
+                        <div style={{ marginTop: 12 }}>
+                            <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>Start quickly</div>
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                {startOptions.map((opt,i) => (
+                                    <button key={i} onClick={() => { lastStarterRef.current = opt.label; setCurrentStarter(opt.label); setInput(opt.text); setTimeout(()=>handleSendText(opt.text), 200) }} className="control-btn">{opt.label}</button>
                                 ))}
                             </div>
-                            {currentStarter && (
-                                <div style={{ marginTop: '8px', fontSize: '13px', color: '#666' }} aria-live="polite">Started with: <strong>{currentStarter}</strong></div>
-                            )}
                         </div>
-                        <div ref={scrollRef} style={{ maxHeight: '320px', overflowY: 'auto', padding: '8px', background: '#fafafa', borderRadius: '6px', border: '1px solid #eee' }}>
-                            {messages.length === 0 && <div style={{ textAlign: 'center', color: '#888', padding: '40px 0' }}>Type a message to begin — I’ll ask a few short questions to help.</div>}
+
+                        <div ref={scrollRef} style={{ maxHeight: 300, overflowY: 'auto', marginTop: 12 }}>
+                            {messages.length === 0 && <div style={{ textAlign: 'center', color: '#888', padding: '30px 0' }}>Type a message to begin — I’ll ask a few short questions to help.</div>}
                             {messages.map((m, idx) => (
-                                <div key={idx} style={{ marginBottom: '10px', textAlign: m.type === 'user' ? 'right' : 'left' }}>
-                                    <div className={"chat-bubble " + (m.type === 'user' ? 'user' : 'bot')} role="article" aria-label={m.type === 'user' ? 'You said' : 'Mind Flow said'} tabIndex={0}>{m.text}</div>
+                                <div key={idx} style={{ marginBottom: 10, textAlign: m.type==='user'?'right':'left' }}>
+                                    <div className={"chat-bubble " + (m.type==='user'?'user':'bot')}>{m.text}</div>
                                 </div>
                             ))}
-                            {isTyping && <div style={{ color: '#666' }}>...</div>}
                         </div>
 
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSendText()} placeholder="Type your message here..." aria-label="Type a message" style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }} />
-                            <button onClick={() => handleSendText()} className="primary-btn" aria-label="Send message">Send</button>
+                        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                            <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter' && handleSendText()} placeholder="Type your message here..." />
+                            <button onClick={()=>handleSendText()} className="primary-btn">Send</button>
                         </div>
 
-                        {/* follow-up quick replies area */}
-                        <div style={{ marginTop: '10px' }}>
-                            {awaiting === 'duration' && (
-                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                    {['Just today','A few days','Weeks','Prefer not to say'].map((opt,i) => (
-                                        <button key={i} onClick={() => handleFollowUp(opt)} className="control-btn" tabIndex={0}>{opt}</button>
-                                    ))}
-                                </div>
-                            )}
-                            {awaiting === 'help_type' && (
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                    <button onClick={() => handleFollowUp('Coping tips')} className="control-btn" tabIndex={0}>Coping tips</button>
-                                    <button onClick={() => handleFollowUp('Find nearby clinics')} className="control-btn" tabIndex={0}>Find clinics</button>
-                                </div>
-                            )}
-                            {awaiting === 'offer_clinic' && (
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                    <button onClick={() => handleFollowUp('Yes, find clinics')} className="control-btn" tabIndex={0}>Yes</button>
-                                    <button onClick={() => handleFollowUp('No thanks')} className="control-btn" tabIndex={0}>No</button>
-                                </div>
-                            )}
-                            {awaiting === 'rate' && (
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                    {[1,2,3,4,5].map(n => (
-                                        <button key={n} onClick={() => handleFollowUp(String(n))} className="control-btn" tabIndex={0}>{n}</button>
-                                    ))}
-                                </div>
-                            )}
+                        <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+                            <button onClick={clearLogs} className="secondary-btn">Clear logs</button>
+                            <button onClick={resetConversation} className="control-btn">Reset chat</button>
                         </div>
-                    </div>
-
-                    {/* Controls for Mood Trends & Logs (actual chart and logs are in the page section above) */}
-                        <div style={{ marginTop: '18px' }}>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            {/* Chart window controls removed from Mind Flow UI. Use the 'Your Mood Trends' section above. */}
-                            <button onClick={clearLogs} className="secondary-btn" tabIndex={0}>Clear logs</button>
-                            <button onClick={resetConversation} className="control-btn" tabIndex={0}>Reset chat</button>
-                            <div style={{ marginLeft: 'auto', color: '#666', fontSize: '13px' }}>Use the "Your Mood Trends" section above for chart and log details.</div>
-                        </div>
-                        
                     </div>
                 </div>
             )
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('mind-flow-root'))
-        root.render(<MindFlow />)
-    </script>
-</body>
+        ReactDOM.createRoot(document.getElementById('mind-flow-root')).render(<MindFlow />)
+        </script>
+    </body>
+</html>
 </html>
