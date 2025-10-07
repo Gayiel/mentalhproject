@@ -12,6 +12,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script>window.MF_PUBLIC_FEED = true; /* feature flag: public read-only feed */</script>
     <script defer src="public-feed.js"></script>
+    <script defer src="sentimentAdapter.js"></script>
     <script defer src="riskClassifier.js"></script>
     </head>
     <body>
@@ -345,12 +346,19 @@
                 // Extract hashtags from message and merge into editable tag list (without auto-saving)
                 const found=(text.match(/#[\w-]{2,24}/g)||[]).map(t=>t.slice(1).toLowerCase());
                 if(found.length){ setTags(prev=>Array.from(new Set([...prev, ...found])).slice(0,12)); }
-                setTimeout(()=>{
+                setTimeout(async ()=>{
+                    // Consent-gated sentiment adapter (async) then risk classify
+                    let extScore = null;
+                    if(consent.ready && consent.accepted && consent.nlp && typeof sentimentAdapter !== 'undefined') {
+                        try {
+                            const res = await sentimentAdapter.analyze(text, { session: sessionIdRef.current });
+                            if(res && typeof res.score === 'number') extScore = res.score;
+                        } catch(err){ /* swallow */ }
+                    }
                     setIsTyping(false)
-                    // Risk evaluation
                     try {
                         if (typeof classifyRisk === 'function') {
-                            const meta = classifyRisk(text, messages);
+                            const meta = classifyRisk(text, messages, extScore);
                             setRiskMeta(meta);
                             if(meta.level==='high') { pushBot("I sense this might be urgent. If you're in immediate danger please contact emergency services. Would you like hotline options?"); lastStarterRef.current=null; return }
                             if(meta.level==='moderate') { pushBot('That sounds really tough. Would a short grounding exercise help?'); lastStarterRef.current=null; return }

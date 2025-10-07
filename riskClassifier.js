@@ -29,8 +29,8 @@
     return list.filter(k => lt.includes(k));
   }
 
-  function classifyRisk(text, history){
-    const score = sentimentScore(text);
+  function classifyRisk(text, history, overrideScore){
+    const score = typeof overrideScore === 'number' ? overrideScore : sentimentScore(text);
     const crisisMatches = matchList(text, crisisKeywords);
     const moderateMatches = matchList(text, moderateKeywords);
 
