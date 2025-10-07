@@ -303,4 +303,27 @@ app.get('/healthz', (req, res) => {
   res.json({ ok: true, uptime: process.uptime(), timestamp: Date.now() });
 });
 
+// Therapist directory endpoint (demo) - serves therapists.json with simple in-memory cache
+import fs from 'fs';
+let therapistCache = { data: null, ts: 0 };
+app.get('/api/therapists', (req,res) => {
+  const now = Date.now();
+  if (therapistCache.data && (now - therapistCache.ts) < 5*60*1000) {
+    return res.json(therapistCache.data);
+  }
+  fs.readFile(path.join(__dirname,'therapists.json'),'utf8', (err, raw) => {
+    if (err) { return res.status(500).json({ error: 'unavailable' }); }
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        therapistCache = { data: parsed, ts: now };
+        return res.json(parsed);
+      }
+      return res.status(500).json({ error: 'invalid_format' });
+    } catch (e) {
+      return res.status(500).json({ error: 'parse_error' });
+    }
+  });
+});
+
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

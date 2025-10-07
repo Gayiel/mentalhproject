@@ -292,7 +292,35 @@ function renderLogsList(history) {
             launchConfetti(6);
         });
 
-        actions.appendChild(viewBtn); actions.appendChild(delBtn);
+        const editTagsBtn = document.createElement('button'); editTagsBtn.className = 'control-btn'; editTagsBtn.textContent = 'Edit Tags';
+        editTagsBtn.addEventListener('click', () => {
+            // prevent multiple editors
+            const existing = item.querySelector('.tag-edit-form'); if (existing) { existing.remove(); return; }
+            const form = document.createElement('form'); form.className='tag-edit-form'; form.setAttribute('aria-label','Edit tags');
+            form.innerHTML = `
+                <input type="text" name="tags" value="${(entry.tags||[]).join(', ')}" aria-label="Tags" placeholder="Comma separated tags" />
+                <button type="submit" class="control-btn save-tags">Save</button>
+                <button type="button" class="control-btn cancel-tags">Cancel</button>`;
+            form.querySelector('.cancel-tags').addEventListener('click', () => form.remove());
+            form.addEventListener('submit', ev => {
+                ev.preventDefault();
+                const raw = form.querySelector('input[name="tags"]').value;
+                const cleaned = raw.split(',').map(t=>t.trim().toLowerCase()).filter(Boolean).slice(0,20);
+                // update in original history array
+                const idx = history.findIndex(h => h.date === entry.date);
+                if (idx !== -1) {
+                    history[idx].tags = cleaned;
+                    saveMoodHistory(history);
+                    renderLogsList(history);
+                    showToast('Tags updated','success');
+                }
+            });
+            // insert right below meta
+            left.appendChild(form);
+            form.querySelector('input').focus();
+        });
+
+        actions.appendChild(viewBtn); actions.appendChild(editTagsBtn); actions.appendChild(delBtn);
         item.appendChild(left); item.appendChild(actions);
         container.appendChild(item);
     });

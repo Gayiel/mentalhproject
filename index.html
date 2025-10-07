@@ -111,6 +111,11 @@
                     <button type="button" id="therapist-clear" class="control-btn">Clear</button>
                 </div>
                 <div id="therapist-list" class="therapist-list" aria-live="polite"></div>
+                <div id="therapist-loading" class="therapist-list" aria-hidden="true" style="display:none;">
+                    <div class="therapist-card therapist-skeleton"><div class="sk-lines"><div class="sk-line w60"></div><div class="sk-line w40"></div><div class="sk-line w80"></div></div></div>
+                    <div class="therapist-card therapist-skeleton"><div class="sk-lines"><div class="sk-line w80"></div><div class="sk-line w60"></div><div class="sk-line w40"></div></div></div>
+                    <div class="therapist-card therapist-skeleton"><div class="sk-lines"><div class="sk-line w60"></div><div class="sk-line w40"></div><div class="sk-line w80"></div></div></div>
+                </div>
             </section>
 
         </main>
@@ -148,10 +153,11 @@
                     window.addEventListener('DOMContentLoaded', toggleChartVisibility);
                 })();
 
-                                // Therapist directory fetch with localStorage cache fallback
+                                // Therapist directory fetch with localStorage cache + API fallback
                                 (function(){
                                     const LS_KEY='therapistDirectoryCacheV1';
                                     let data=[];
+                                    let apiTried=false;
                                     function render(list){
                                         const host=document.getElementById('therapist-list'); if(!host) return;
                                         host.innerHTML='';
@@ -172,14 +178,25 @@
                                         const parts=q.split(/\s+/).filter(Boolean);
                                         render(data.filter(t => parts.every(p => t.name.toLowerCase().includes(p) || (t.focus||[]).some(f=>f.includes(p)) || (t.modality||'').toLowerCase().includes(p))));
                                     }
+                                    function showLoading(on){ const sk=document.getElementById('therapist-loading'); if(sk){ sk.style.display=on?'grid':'none'; sk.setAttribute('aria-hidden', on?'false':'true'); } }
                                     async function load(){
                                         const cached=localStorage.getItem(LS_KEY);
                                         if(cached){ try { data=JSON.parse(cached); } catch(e){} }
                                         render(data);
+                                        showLoading(true);
                                         try {
+                                            // First attempt API endpoint
+                                            if(!apiTried){
+                                                apiTried=true;
+                                                try {
+                                                    const apiRes=await fetch('/api/therapists');
+                                                    if(apiRes.ok){ const apiData=await apiRes.json(); if(Array.isArray(apiData) && apiData.length){ data=apiData; localStorage.setItem(LS_KEY, JSON.stringify(apiData)); filter(); showLoading(false); return; } }
+                                                } catch(e){}
+                                            }
                                             const res=await fetch('therapists.json',{cache:'no-cache'});
                                             if(res.ok){ const fresh= await res.json(); if(Array.isArray(fresh)){ data=fresh; localStorage.setItem(LS_KEY, JSON.stringify(fresh)); filter(); } }
                                         } catch(e){}
+                                        showLoading(false);
                                     }
                                     window.addEventListener('DOMContentLoaded',()=>{
                                         load();
@@ -205,9 +222,10 @@
             const scrollRef = React.useRef(null)
             const lastStarterRef = React.useRef(null)
             const [selectedMood, setSelectedMood] = React.useState(null)
-            const [tagInput, setTagInput] = React.useState('')
+            const [tagInput, setTagInput] = React.useState(() => localStorage.getItem('mf_tag_draft') || '')
             const [tags, setTags] = React.useState([])
             const [lastInsightSig, setLastInsightSig] = React.useState(null)
+            const [insightsEnabled, setInsightsEnabled] = React.useState(() => localStorage.getItem('mf_insights_enabled') !== 'false')
 
             const startOptions = [
                 { label: 'Just checking in', text: "Just checking in — wondering how I'm doing today." },
@@ -291,6 +309,7 @@
                 if(!val) return;
                 setTags(prev => prev.includes(val) ? prev : [...prev, val].slice(0,12));
                 setTagInput('');
+                localStorage.removeItem('mf_tag_draft');
             }
             function removeTag(t){ setTags(prev => prev.filter(x=>x!==t)); }
 
@@ -304,6 +323,7 @@
             }
 
             function analyzeInsights(allLogs){
+                if(!insightsEnabled) return; // respect user preference
                 if(!allLogs.length) return;
                 const recent = allLogs.slice(-7);
                 const lows = recent.filter(l=>l.mood <=2).length;
@@ -365,10 +385,15 @@
                                             #{t}<button type="button" aria-label={`Remove tag ${t}`} onClick={()=>removeTag(t)} style={{ background:'transparent', border:'none', cursor:'pointer', fontSize:14, lineHeight:1 }}>✕</button>
                                         </span>
                                     ))}
-                                    <input aria-label="Add tag" value={tagInput} onChange={e=>setTagInput(e.target.value)} onKeyDown={e=>{ if(e.key==='Enter'){ e.preventDefault(); addTagFromInput(); } }} placeholder="Add tag" style={{ minWidth:90, padding:'4px 8px', border:'1px solid var(--glass-border)', borderRadius:8 }} />
+                                            <input aria-label="Add tag" value={tagInput} onChange={e=>{ setTagInput(e.target.value); localStorage.setItem('mf_tag_draft', e.target.value); }} onKeyDown={e=>{ if(e.key==='Enter'){ e.preventDefault(); addTagFromInput(); } }} placeholder="Add tag" style={{ minWidth:90, padding:'4px 8px', border:'1px solid var(--glass-border)', borderRadius:8 }} />
                                     <button type="button" className="control-btn" style={{ padding:'4px 10px' }} onClick={addTagFromInput}>Add</button>
                                 </div>
                                 <div style={{ fontSize:11, opacity:.6 }}>Hashtags you type (e.g. #anxiety) are auto-suggested here before saving.</div>
+                                        <div style={{ marginTop:8 }}>
+                                            <button type="button" className="control-btn insights-toggle" aria-pressed={insightsEnabled} onClick={()=>{ const next=!insightsEnabled; setInsightsEnabled(next); localStorage.setItem('mf_insights_enabled', String(next)); if(!next){ showToast && showToast('Insights disabled','warn'); } else { showToast && showToast('Insights enabled'); analyzeInsights(logs);} }}>
+                                                {insightsEnabled? 'Disable Insights' : 'Enable Insights'}
+                                            </button>
+                                        </div>
                             </div>
                         </div>
 
