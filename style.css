@@ -315,3 +315,52 @@ input:focus, textarea:focus { border-color: var(--accent-teal); box-shadow: 0 6p
 /* Make controls and primary actions consistent across pages */
 .control-btn, .primary-btn, .secondary-btn { transition: transform .12s ease, box-shadow .12s ease; }
 .control-btn:active, .primary-btn:active { transform: translateY(1px); }
+
+/* --- Tumblr/Reddit style public feed supplements --- */
+.pf-post pre { white-space: pre-wrap; word-break: break-word; }
+.pf-tag { transition: background .15s; }
+.pf-tag:focus { outline:2px solid #6366f1; outline-offset:2px; }
+.pf-vote button:focus { outline:2px solid #6366f1; outline-offset:2px; }
+.pf-error { font-size:12px; }
+
+/* Mood chips inside chat */
+.mood-chip { background: rgba(255,255,255,0.7); border:1px solid var(--glass-border); padding:6px 10px; border-radius:8px; cursor:pointer; font-weight:700; font-size:13px; }
+.mood-chip:hover { background: linear-gradient(90deg,var(--accent-teal),var(--accent-purple)); color:#fff; }
+.mood-chip.active { background: linear-gradient(90deg,var(--accent-teal),var(--accent-purple)); color:#fff; box-shadow:0 4px 14px rgba(0,0,0,0.1); }
+.mood-chip.clear { background: rgba(255,255,255,0.4); font-weight:600; }
+
+/* Therapist directory */
+.therapist-list { display:grid; gap:14px; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); margin-top:12px; }
+.therapist-card { background: var(--glass-bg); border:1px solid var(--glass-border); border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:8px; box-shadow:0 6px 20px rgba(0,0,0,0.04); }
+.therapist-card .t-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.therapist-card .t-mod { background: linear-gradient(90deg,var(--accent-teal),var(--accent-purple)); color:#fff; font-size:10px; padding:4px 6px; border-radius:6px; letter-spacing:.5px; }
+.therapist-card .t-focus { display:flex; flex-wrap:wrap; gap:4px; font-size:11px; }
+.therapist-card .t-focus span { background: rgba(0,0,0,0.05); padding:3px 6px; border-radius:5px; }
+body.feed-theme-dark .therapist-card .t-focus span { background: rgba(255,255,255,0.12); }
+.therapist-card .t-meta { font-size:11px; opacity:.7; display:flex; gap:6px; flex-wrap:wrap; }
+.therapist-card .t-contact { align-self:flex-start; padding:8px 12px; font-size:12px; }
+
+/* --- Advanced enchanted feed global helpers (shared tokens) --- */
+body.feed-theme-dark {
+  --app-bg-top: #0f1117;
+  --app-bg-bottom: #1b2030;
+  --color-text: #e8ecf5;
+  --muted-text: rgba(232,236,245,0.58);
+  background: radial-gradient(circle at 20% 15%,#1f2535,#131720 55%) fixed;
+  color: var(--color-text);
+}
+body.feed-theme-dark .card { background: linear-gradient(160deg, rgba(40,46,60,0.85), rgba(30,34,46,0.7)); border-color: rgba(255,255,255,0.06); }
+body.feed-theme-dark .primary-btn { box-shadow: 0 10px 30px rgba(99,102,241,0.28); }
+body.feed-theme-dark .bottom-nav { background: linear-gradient(180deg, rgba(48,52,66,0.85), rgba(40,44,54,0.9)); border-color: rgba(255,255,255,0.08); }
+body.feed-theme-dark .nav-btn.active { box-shadow: 0 8px 24px rgba(99,102,241,0.35); }
+
+/* Feed theme transitions */
+body.feed-theme-light, body.feed-theme-dark { transition: background 600ms ease, color 400ms ease; }
+
+/* Slight refinement to feed tags for cohesion */
+body.feed-theme-dark .pf-vote button { background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04)); color:#d5d9e5; border:1px solid rgba(255,255,255,0.06); }
+body.feed-theme-dark .pf-vote button:hover { background: linear-gradient(90deg,#6366f1,#8b5cf6); color:#fff; }
+
+/* Provide graceful fallback when reduced motion is enabled */
+.pf-reduced-motion * { animation: none !important; transition: none !important; }
+

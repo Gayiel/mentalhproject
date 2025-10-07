@@ -10,8 +10,11 @@
         <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
         <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>window.MF_PUBLIC_FEED = true; /* feature flag: public read-only feed */</script>
+    <script defer src="public-feed.js"></script>
     </head>
     <body>
+    <div id="legacy-app" data-legacy>
         <a class="skip-link" href="#mind-flow-root">Skip to main content</a>
 
         <header class="topbar" role="banner" aria-label="Top navigation">
@@ -40,6 +43,32 @@
                 <h2 id="mind-flow-title">Mind Flow</h2>
                 <div id="mind-flow-root"></div>
             </section>
+
+                <!-- Minimal hidden legacy logger (kept for script.js compatibility) -->
+                <section id="mood-logger" class="sr-only" aria-hidden="true">
+                    <h2 id="logger-title" class="sr-only">How are you feeling today?</h2>
+                    <form id="mood-log-form">
+                        <p class="date-display">Today's Date: <time id="current-date" datetime=""></time></p>
+                        <fieldset class="mood-scale" role="radiogroup" aria-label="Select your current mood">
+                            <legend class="sr-only">Mood Selection</legend>
+                            <!-- single radio so legacy scripts and self-test can tick a value -->
+                            <input type="radio" id="mood-vgood" name="mood" value="5">
+                            <label for="mood-vgood">Very Good</label>
+                        </fieldset>
+
+                        <div class="input-group">
+                            <label for="activity-tags" class="sr-only">Activity tags</label>
+                            <input type="text" id="activity-tags" placeholder="Tags (comma separated)" />
+                        </div>
+
+                        <div class="input-group">
+                            <label for="mood-notes" class="sr-only">Notes</label>
+                            <textarea id="mood-notes" rows="2"></textarea>
+                        </div>
+
+                        <button type="submit" id="log-mood-btn">Log My Mood</button>
+                    </form>
+                </section>
 
             <aside id="resource-banner" class="alert-banner hidden" role="alert" aria-live="polite">
                 <p>It looks like you've logged a challenging mood pattern. <strong>Immediate, affordable support is available.</strong></p>
@@ -74,6 +103,16 @@
                 </div>
             </section>
 
+            <section id="therapists" aria-labelledby="therapists-title" class="card">
+                <h2 id="therapists-title" style="margin-top:0">Available Therapists</h2>
+                <p class="text-muted" style="margin-top:4px; font-size:0.9rem">Browse supportive professionals (sample/demo data). Filter by specialty or modality.</p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:12px 0 6px;">
+                    <input id="therapist-filter" type="search" placeholder="Filter (e.g. anxiety, cbt)" aria-label="Filter therapists" style="flex:1; padding:8px 10px; border-radius:8px; border:1px solid var(--glass-border);" />
+                    <button type="button" id="therapist-clear" class="control-btn">Clear</button>
+                </div>
+                <div id="therapist-list" class="therapist-list" aria-live="polite"></div>
+            </section>
+
         </main>
 
         <footer class="page-footer" role="contentinfo">
@@ -83,6 +122,64 @@
         <div id="toast-area" aria-live="polite" aria-atomic="true"></div>
 
         <script src="script.js"></script>
+                <script>
+                // Hide chart area until at least one log exists
+                (function(){
+                    function toggleChartVisibility(){
+                        try{
+                            const raw = localStorage.getItem('accessibleMoodHistory');
+                            const arr = raw? JSON.parse(raw): [];
+                            const container = document.getElementById('mood-chart-container');
+                            if(!container) return;
+                            if(!arr.length){ container.style.display='none'; }
+                            else { container.style.display='block'; }
+                        }catch(e){}
+                    }
+                    window.addEventListener('moodHistoryUpdated', toggleChartVisibility);
+                    window.addEventListener('DOMContentLoaded', toggleChartVisibility);
+                })();
+
+                // Therapist directory demo (client-side static)
+                (function(){
+                    const data = [
+                        { name:'Dr. Alicia Rivera', focus:['anxiety','cbt','stress'], slots:'Mon/Wed/Fri', modality:'CBT', remote:true },
+                        { name:'James Okoro', focus:['depression','mindfulness','grief'], slots:'Tue/Thu', modality:'Mindfulness', remote:false },
+                        { name:'Sofia Martins', focus:['burnout','career','anxiety'], slots:'Daily', modality:'Integrative', remote:true },
+                        { name:'Liam Chen', focus:['trauma','emdr'], slots:'Wed/Fri', modality:'EMDR', remote:false },
+                        { name:'Priya Singh', focus:['relationships','anxiety'], slots:'Weekends', modality:'Humanistic', remote:true }
+                    ];
+                    function render(list){
+                        const host = document.getElementById('therapist-list'); if(!host) return;
+                        host.innerHTML='';
+                        if(!list.length){ host.innerHTML='<p class="text-muted">No matches.</p>'; return; }
+                        list.forEach(t=>{
+                            const card = document.createElement('div');
+                            card.className='therapist-card';
+                            card.innerHTML=`<div class='t-head'><strong>${t.name}</strong> <span class='t-mod'>${t.modality}</span></div>
+                                <div class='t-focus'>${t.focus.map(f=>`<span>#${f}</span>`).join(' ')}</div>
+                                <div class='t-meta'><span>${t.slots}</span> · <span>${t.remote?'Remote / In-person':'In-person only'}</span></div>
+                                <button class='primary-btn t-contact' type='button'>Contact</button>`;
+                            card.querySelector('.t-contact').addEventListener('click',()=>{
+                                alert('Contact flow demo: '+t.name);
+                            });
+                            host.appendChild(card);
+                        });
+                    }
+                    function filter(){
+                        const q = (document.getElementById('therapist-filter')?.value || '').trim().toLowerCase();
+                        if(!q) return render(data);
+                        const parts = q.split(/\s+/).filter(Boolean);
+                        const res = data.filter(t => parts.every(p => t.name.toLowerCase().includes(p) || t.focus.some(f=>f.includes(p)) || t.modality.toLowerCase().includes(p)));
+                        render(res);
+                    }
+                    window.addEventListener('DOMContentLoaded',()=>{
+                        render(data);
+                        const inp=document.getElementById('therapist-filter');
+                        if(inp) inp.addEventListener('input', ()=>{ filter(); });
+                        const clr=document.getElementById('therapist-clear'); if(clr) clr.addEventListener('click', ()=>{ if(inp){ inp.value=''; filter(); } });
+                    });
+                })();
+                </script>
 
         <!-- Mind Flow React component (Babel) -->
         <script type="text/babel">
@@ -99,6 +196,7 @@
             const [currentStarter, setCurrentStarter] = React.useState(null)
             const scrollRef = React.useRef(null)
             const lastStarterRef = React.useRef(null)
+            const [selectedMood, setSelectedMood] = React.useState(null)
 
             const startOptions = [
                 { label: 'Just checking in', text: "Just checking in — wondering how I'm doing today." },
@@ -194,26 +292,7 @@
                     </div>
 
                     <div className="card" style={{ padding: 12 }}>
-                        <form onSubmit={handleInlineFormSubmit} aria-label="Inline mood logger" style={{ display: 'grid', gap: 8 }}>
-                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                <div style={{ fontWeight: 800 }}>Quick check-in</div>
-                                <div style={{ display: 'flex', gap: 8 }}>
-                                    {[5,4,3,2,1].map(v => (
-                                        <label key={v} className={"control-btn"} style={{ padding: '6px 10px', borderRadius: 8 }}>
-                                            <input type="radio" name="mf-mood" value={v} style={{ display: 'none' }} />{v}
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                            <input id="mf-tags" placeholder="Tags (comma separated)" aria-label="Tags" />
-                            <textarea id="mf-notes" rows={2} placeholder="Optional note" aria-label="Notes" />
-                            <div style={{ display: 'flex', gap: 8 }}>
-                                <button type="submit" className="primary-btn">Save check-in</button>
-                                <button type="button" onClick={() => { document.getElementById('mf-notes').value=''; document.getElementById('mf-tags').value=''; }}>Clear</button>
-                            </div>
-                        </form>
-
-                        <div style={{ marginTop: 12 }}>
+                        <div style={{ marginTop: 4 }}>
                             <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>Start quickly</div>
                             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                                 {startOptions.map((opt,i) => (
@@ -222,7 +301,17 @@
                             </div>
                         </div>
 
-                        <div ref={scrollRef} style={{ maxHeight: 300, overflowY: 'auto', marginTop: 12 }}>
+                        <div style={{ marginTop: 16 }}>
+                            <strong style={{ fontSize: 13 }}>Select a mood (optional)</strong>
+                            <div className="mf-mood-picker" role="group" aria-label="Select mood" style={{ display:'flex', gap:8, marginTop:8, flexWrap:'wrap' }}>
+                                {[5,4,3,2,1].map(v => (
+                                    <button type="button" key={v} className={"mood-chip" + (selectedMood===v?" active":"")} onClick={()=>setSelectedMood(v)} aria-pressed={selectedMood===v}>{v}</button>
+                                ))}
+                                <button type="button" className="mood-chip clear" onClick={()=>setSelectedMood(null)} aria-pressed={selectedMood===null}>Clear</button>
+                            </div>
+                        </div>
+
+                        <div ref={scrollRef} style={{ maxHeight: 300, overflowY: 'auto', marginTop: 18 }}>
                             {messages.length === 0 && <div style={{ textAlign: 'center', color: '#888', padding: '30px 0' }}>Type a message to begin — I’ll ask a few short questions to help.</div>}
                             {messages.map((m, idx) => (
                                 <div key={idx} style={{ marginBottom: 10, textAlign: m.type==='user'?'right':'left' }}>
@@ -230,15 +319,16 @@
                                 </div>
                             ))}
                         </div>
-
-                        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                            <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter' && handleSendText()} placeholder="Type your message here..." />
-                            <button onClick={()=>handleSendText()} className="primary-btn">Send</button>
-                        </div>
-
-                        <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
-                            <button onClick={clearLogs} className="secondary-btn">Clear logs</button>
-                            <button onClick={resetConversation} className="control-btn">Reset chat</button>
+                        <div style={{ display: 'flex', flexDirection:'column', gap: 10, marginTop: 12 }}>
+                            <div style={{ display:'flex', gap:8 }}>
+                                <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter' && handleSendText()} placeholder={selectedMood?`Optional note for mood ${selectedMood}`:'Type your message here...'} />
+                                <button onClick={()=>handleSendText()} className="primary-btn">Send</button>
+                            </div>
+                            <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                                <button type="button" disabled={!selectedMood} className="control-btn" onClick={()=>{ if(!selectedMood) return; addLog(selectedMood, input.trim(), { conversation: messages.slice(), starter: currentStarter, tags: (input.match(/#[\w-]{2,24}/g)||[]).map(t=>t.slice(1)) }); setInput(''); setSelectedMood(null); pushBot('Mood saved.'); }}>Save Mood</button>
+                                <button onClick={clearLogs} className="secondary-btn">Clear logs</button>
+                                <button onClick={resetConversation} className="control-btn">Reset chat</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -247,6 +337,6 @@
 
         ReactDOM.createRoot(document.getElementById('mind-flow-root')).render(<MindFlow />)
         </script>
+        </div><!-- /legacy-app -->
     </body>
-</html>
 </html>
