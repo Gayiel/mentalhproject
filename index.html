@@ -252,6 +252,10 @@
             const [consent, setConsent] = React.useState({ nlp:false, retain:false, ready:false })
             const sessionIdRef = React.useRef(localStorage.getItem('mf_session_id') || (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)))
             React.useEffect(()=>{ localStorage.setItem('mf_session_id', sessionIdRef.current) }, [])
+            const [sessionPhase, setSessionPhase] = React.useState('init') // init | active | ending | ended
+            const [actions, setActions] = React.useState([]) // [{label, handler}]
+            const [lastSuggestion, setLastSuggestion] = React.useState(null)
+            const [escalation, setEscalation] = React.useState({ offered:false, accepted:false })
 
             const startOptions = [
                 { label: 'Just checking in', text: "Just checking in — wondering how I'm doing today." },
@@ -270,7 +274,8 @@
             }
 
             React.useEffect(()=>{
-                pushBot("Hi — I'm Mind Flow. How can I help you today? You can try one of the quick starters below.")
+                // Initial lightweight greeting (full intro after consent)
+                pushBot("Hi — I'm Mind Flow, an AI support assistant (not a clinician). I'll wait for you to review privacy before we begin.")
                 try{ if (typeof renderMoodChart === 'function') renderMoodChart(logs) } catch(e){}
                 try{ if (typeof renderLogsList === 'function') renderLogsList(logs) } catch(e){}
 
@@ -293,12 +298,18 @@
             // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [])
 
-            React.useEffect(()=>{ if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight }, [messages, isTyping])
+            React.useEffect(()=>{ if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight }, [messages, isTyping, actions])
 
             // Consent banner mount
             React.useEffect(()=>{
                 const stored = safeParse(localStorage.getItem('mf_consent'));
-                if(stored && stored.accepted){ setConsent({...stored, ready:true}); return; }
+                if(stored){
+                    setConsent({...stored, ready:true});
+                    // Start session automatically once consent object exists (accepted or declined external NLP)
+                    setSessionPhase('active');
+                    pushIntro(stored);
+                    return;
+                }
                 const cb = document.getElementById('consent-banner'); if(cb) cb.classList.remove('hidden');
                 const form = document.getElementById('consent-form');
                 const decline = document.getElementById('consent-decline');
@@ -310,6 +321,8 @@
                     setConsent({...obj, ready:true});
                     if(cb) cb.classList.add('hidden');
                     if(!retain){ localStorage.removeItem('accessibleMoodHistory'); }
+                    setSessionPhase('active');
+                    pushIntro(obj);
                 }
                 form && form.addEventListener('submit', e=>{ e.preventDefault(); finalize(true); });
                 decline && decline.addEventListener('click', ()=>finalize(false));
@@ -319,8 +332,17 @@
                 }
             },[])
 
+            function pushIntro(cons){
+                const privacyLine = cons.accepted ? (cons.nlp? 'If you enable external analysis, anonymized text may be processed.' : 'We will keep everything local in your browser.') : 'All processing will remain local and no external analysis will be used.';
+                pushBot("Thanks for setting preferences. I'm here to listen and support. You can tell me how you're feeling or choose a starter. You can type 'end' anytime to wrap up.")
+                pushBot(privacyLine)
+            }
+
             function pushUser(text){ setMessages(prev=>[...prev,{type:'user', text}]) }
             function pushBot(text, meta){ setMessages(prev=>[...prev,{type:'bot', text, meta}]) }
+
+            function addActions(list){ setActions(list.map(a=>({...a,id:crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)}))) }
+            function clearActions(){ setActions([]) }
 
             const crisisPatterns = ['kill myself','end my life','suicide','hurt myself','cutting','no reason to live','i might harm']
             function detectCrisis(text){ const lt=(text||'').toLowerCase(); return crisisPatterns.some(p => lt.includes(p)) }
@@ -338,9 +360,21 @@
             function handleSendText(raw){
                 const text = raw || input
                 if (!text || !text.trim()) return
+                if(sessionPhase==='ended') { pushBot('Session has ended. Start a new session to continue.'); return }
+                if(sessionPhase==='init'){ pushBot('Please review the privacy panel and accept or decline to begin.'); return }
                 pushUser(text)
                 setInput('')
                 setIsTyping(true)
+                // Session end detection
+                const lt = text.toLowerCase();
+                if(sessionPhase==='active' && /(end session|end|finish|stop|goodbye|bye)/.test(lt)) { setTimeout(()=>{ endSession(); }, 400); return }
+                // Decline / skip handling for last suggestion
+                if(lastSuggestion && /(no|not now|skip|maybe later|another time)/.test(lt)) {
+                    setLastSuggestion(null);
+                    clearActions();
+                    setTimeout(()=>{ setIsTyping(false); pushBot('Absolutely okay — I will just listen. Share anything you like.'); }, 400);
+                    return;
+                }
                 const moodMatch = (text||'').match(/mood\s*[:\-]?\s*([1-5])(?:\s*[-–—]\s*(.+))?/i)
                 if (moodMatch){ addLog(Number(moodMatch[1]), moodMatch[2] ? moodMatch[2].trim() : '', { conversation: messages.slice(), starter: lastStarterRef.current }); setIsTyping(false); pushBot('Saved to Your Logs.'); return }
                 // Extract hashtags from message and merge into editable tag list (without auto-saving)
@@ -360,14 +394,139 @@
                         if (typeof classifyRisk === 'function') {
                             const meta = classifyRisk(text, messages, extScore);
                             setRiskMeta(meta);
-                            if(meta.level==='high') { pushBot("I sense this might be urgent. If you're in immediate danger please contact emergency services. Would you like hotline options?"); lastStarterRef.current=null; return }
-                            if(meta.level==='moderate') { pushBot('That sounds really tough. Would a short grounding exercise help?'); lastStarterRef.current=null; return }
+                            if(meta.level==='high') { offerHighRiskSupport(meta); lastStarterRef.current=null; return }
+                            if(meta.level==='moderate') { maybeOfferGrounding(); lastStarterRef.current=null; return }
                         }
                     } catch(e){}
                     if (detectCrisis(text)){ pushBot("I'm worried by what you shared. If you're in immediate danger, call emergency services."); return }
-                    pushBot('Thanks for sharing — can you tell me how long you\'ve felt like this?')
+                    const intent = detectIntent(text);
+                    routeIntent(intent, text);
                     lastStarterRef.current = null
                 }, 600)
+            }
+
+            function detectIntent(text){
+                const t = (text||'').toLowerCase();
+                if(/anxi|panic|overwhelm/.test(t)) return 'anxiety';
+                if(/sleep|insomnia|tired/.test(t)) return 'sleep';
+                if(/lonely|alone|isolat/.test(t)) return 'lonely';
+                if(/no motivation|unmotivated|cant focus|can't focus/.test(t)) return 'motivation';
+                if(/thank|thanks|appreciate/.test(t)) return 'gratitude';
+                return 'general';
+            }
+
+            function routeIntent(intent, raw){
+                switch(intent){
+                    case 'anxiety':
+                        pushBot('That sounds stressful. Would a brief grounding or breathing exercise be helpful?');
+                        setLastSuggestion('grounding');
+                        addActions([
+                            { label:'Try grounding', handler: startGrounding },
+                            { label:'Show breathing', handler: startBreathing },
+                            { label:'Just listen', handler: ()=>{ pushBot('Okay, I am here. Share anything that feels important.'); clearActions(); } }
+                        ]);
+                        break;
+                    case 'sleep':
+                        pushBot('Sleep struggles can be hard. Sometimes a gentle wind-down routine helps. Want a quick tip?');
+                        setLastSuggestion('sleep-tip');
+                        addActions([
+                            { label:'Give a tip', handler: ()=>{ pushBot('Try a 5-minute screen-free break and a slow exhale pattern (4 in, 6 out) to cue rest.'); clearActions(); } },
+                            { label:'Not now', handler: ()=>{ pushBot('No problem. We can revisit later.'); clearActions(); } }
+                        ]);
+                        break;
+                    case 'lonely':
+                        pushBot('Feeling lonely is tough. Would exploring supportive community options help?');
+                        setLastSuggestion('community');
+                        addActions([
+                            { label:'Suggest resources', handler: ()=>{ pushBot('Consider peer support lines or moderated online communities focused on shared interests.'); clearActions(); } },
+                            { label:'Skip', handler: ()=>{ pushBot('Alright. I can simply listen.'); clearActions(); } }
+                        ]);
+                        break;
+                    case 'motivation':
+                        pushBot('Motivation dips happen. Want a tiny action planning prompt?');
+                        setLastSuggestion('action-plan');
+                        addActions([
+                            { label:'Yes plan', handler: ()=>{ pushBot('Pick one task under 5 min. After finishing, send me "done" and we can reflect.'); clearActions(); } },
+                            { label:'Skip', handler: ()=>{ pushBot('Understood. Take your time.'); clearActions(); } }
+                        ]);
+                        break;
+                    case 'gratitude':
+                        pushBot('I appreciate you too. Anything else you’d like to explore or should we begin wrapping up?');
+                        break;
+                    default:
+                        pushBot('Thanks for sharing — can you tell me how long you\'ve felt like this?')
+                }
+            }
+
+            function maybeOfferGrounding(){
+                if(lastSuggestion==='grounding') return;
+                setLastSuggestion('grounding');
+                pushBot('That sounds really tough. Would a short grounding exercise help?');
+                addActions([
+                    { label:'Yes grounding', handler: startGrounding },
+                    { label:'Breathing', handler: startBreathing },
+                    { label:'No thanks', handler: ()=>{ pushBot('Okay — I will just stay with you in this. Share anything you like.'); clearActions(); } }
+                ]);
+            }
+
+            function offerHighRiskSupport(meta){
+                if(escalation.offered) { pushBot('Please choose: hotline info, grounding, or just talk.'); return }
+                setEscalation(prev=>({...prev, offered:true}));
+                pushBot("I sense this may be urgent. You're not alone. I can show hotline info, guide grounding, or just listen. What would you like?");
+                addActions([
+                    { label:'Hotline info', handler: showHotlines },
+                    { label:'Grounding', handler: startGrounding },
+                    { label:'Just listen', handler: ()=>{ pushBot('I will stay with you here. Type anything that comes up.'); clearActions(); } }
+                ]);
+            }
+
+            function showHotlines(){
+                clearActions();
+                const region = localStorage.getItem('hotlineRegion')||'us';
+                const map={
+                    us:'988 (Suicide & Crisis Lifeline) — call or text 988',
+                    uk:'Samaritans: 116 123',
+                    ca:'988 (Talk Suicide Canada)',
+                    au:'Lifeline: 13 11 14'
+                };
+                pushBot(`Here are hotline details (${region.toUpperCase()}): ${map[region]||map.us}. If you are in immediate danger, contact local emergency services.`);
+                setEscalation(prev=>({...prev, accepted:true}));
+            }
+
+            function startGrounding(){
+                clearActions();
+                pushBot('Let’s try a 5-4-3-2-1 grounding. Ready? (You can type stop anytime)');
+                setTimeout(()=>pushBot('Name 5 things you can see.'), 800);
+                setTimeout(()=>pushBot('Great. Now 4 things you can touch.'), 5000);
+                setTimeout(()=>pushBot('Now 3 things you can hear.'), 9500);
+                setTimeout(()=>pushBot('Next 2 things you can smell or like the scent of.'), 14000);
+                setTimeout(()=>pushBot('Finally 1 thing you appreciate about yourself right now.'), 18500);
+                setTimeout(()=>{ pushBot('How do you feel now? A tiny shift counts.'); }, 24000);
+            }
+
+            function startBreathing(){
+                clearActions();
+                pushBot('Let’s do a brief paced breathing: Inhale 4, hold 2, exhale 6. I’ll count a few cycles.');
+                let cycle=0;
+                function step(){
+                    if(cycle>=3){ pushBot('Nice work. Notice any small change in tension?'); return }
+                    cycle++;
+                    pushBot(`Cycle ${cycle}: Inhale (4) ... Hold (2) ... Exhale (6).`);
+                    setTimeout(step, 6000);
+                }
+                setTimeout(step, 800);
+            }
+
+            function endSession(){
+                const userMsgs = messages.filter(m=>m.type==='user').length;
+                const today = logs.find(l=>l.date===nowDate());
+                pushBot(`Session summary: ${userMsgs} messages shared${today? ', mood saved today at level '+today.mood:''}. Remember this space is not clinical care but a reflective aid.`);
+                pushBot('You can clear this conversation or start fresh. Take care of yourself.');
+                setSessionPhase('ended');
+                addActions([
+                    { label:'Start new session', handler: ()=>{ setMessages([]); setSessionPhase('active'); pushIntro(consent); clearActions(); } },
+                    { label:'Clear & close', handler: ()=>{ setMessages([]); setSessionPhase('ended'); clearActions(); } }
+                ]);
             }
 
             function addTagFromInput(){
@@ -480,16 +639,20 @@
                                     <div className={"chat-bubble " + (m.type==='user'?'user':'bot')}>{m.text}</div>
                                 </div>
                             ))}
+                            {actions.length>0 && <div style={{ margin:'10px 0 4px', display:'flex', flexWrap:'wrap', gap:8 }} aria-label="Suggested actions" role="group">
+                                {actions.map(a=> <button key={a.id} className="control-btn" onClick={()=>{ a.handler(); }} style={{ padding:'6px 10px' }}>{a.label}</button>)}
+                            </div>}
                         </div>
                         <div style={{ display: 'flex', flexDirection:'column', gap: 10, marginTop: 12 }}>
                             <div style={{ display:'flex', gap:8 }}>
-                                <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter' && handleSendText()} placeholder={selectedMood?`Optional note for mood ${selectedMood}`:'Type your message here...'} />
+                                <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter' && handleSendText()} placeholder={sessionPhase==='init' ? 'Review privacy to begin...' : (sessionPhase==='ended' ? 'Session ended — start new session?' : (selectedMood?`Optional note for mood ${selectedMood}`:'Type your message here...'))} disabled={sessionPhase==='init' || sessionPhase==='ended'} />
                                 <button onClick={()=>handleSendText()} className="primary-btn">Send</button>
                             </div>
                             <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
                                 <button type="button" disabled={!selectedMood} className="control-btn" onClick={saveMoodEntry}>Save Mood</button>
                                 <button onClick={clearLogs} className="secondary-btn">Clear logs</button>
                                 <button onClick={resetConversation} className="control-btn">Reset chat</button>
+                                <button type="button" className="control-btn" onClick={()=>endSession()}>End Session</button>
                             </div>
                         </div>
                     </div>
