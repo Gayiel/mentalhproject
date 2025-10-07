@@ -1,0 +1,7 @@
+[
+  { "name": "Dr. Alicia Rivera", "focus": ["anxiety","cbt","stress"], "slots": "Mon/Wed/Fri", "modality": "CBT", "remote": true },
+  { "name": "James Okoro", "focus": ["depression","mindfulness","grief"], "slots": "Tue/Thu", "modality": "Mindfulness", "remote": false },
+  { "name": "Sofia Martins", "focus": ["burnout","career","anxiety"], "slots": "Daily", "modality": "Integrative", "remote": true },
+  { "name": "Liam Chen", "focus": ["trauma","emdr"], "slots": "Wed/Fri", "modality": "EMDR", "remote": false },
+  { "name": "Priya Singh", "focus": ["relationships","anxiety"], "slots": "Weekends", "modality": "Humanistic", "remote": true }
+]

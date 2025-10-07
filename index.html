@@ -122,7 +122,7 @@
         <div id="toast-area" aria-live="polite" aria-atomic="true"></div>
 
         <script src="script.js"></script>
-                <script>
+                                <script>
                 // Hide chart area until at least one log exists
                 (function(){
                     function toggleChartVisibility(){
@@ -131,54 +131,62 @@
                             const arr = raw? JSON.parse(raw): [];
                             const container = document.getElementById('mood-chart-container');
                             if(!container) return;
-                            if(!arr.length){ container.style.display='none'; }
-                            else { container.style.display='block'; }
+                                            if(!arr.length){
+                                                container.classList.add('chart-hidden');
+                                            } else {
+                                                // trigger animated reveal only once
+                                                if(container.classList.contains('chart-hidden')){
+                                                    requestAnimationFrame(()=>{
+                                                        container.classList.remove('chart-hidden');
+                                                        container.classList.add('chart-revealed');
+                                                    });
+                                                }
+                                            }
                         }catch(e){}
                     }
                     window.addEventListener('moodHistoryUpdated', toggleChartVisibility);
                     window.addEventListener('DOMContentLoaded', toggleChartVisibility);
                 })();
 
-                // Therapist directory demo (client-side static)
-                (function(){
-                    const data = [
-                        { name:'Dr. Alicia Rivera', focus:['anxiety','cbt','stress'], slots:'Mon/Wed/Fri', modality:'CBT', remote:true },
-                        { name:'James Okoro', focus:['depression','mindfulness','grief'], slots:'Tue/Thu', modality:'Mindfulness', remote:false },
-                        { name:'Sofia Martins', focus:['burnout','career','anxiety'], slots:'Daily', modality:'Integrative', remote:true },
-                        { name:'Liam Chen', focus:['trauma','emdr'], slots:'Wed/Fri', modality:'EMDR', remote:false },
-                        { name:'Priya Singh', focus:['relationships','anxiety'], slots:'Weekends', modality:'Humanistic', remote:true }
-                    ];
-                    function render(list){
-                        const host = document.getElementById('therapist-list'); if(!host) return;
-                        host.innerHTML='';
-                        if(!list.length){ host.innerHTML='<p class="text-muted">No matches.</p>'; return; }
-                        list.forEach(t=>{
-                            const card = document.createElement('div');
-                            card.className='therapist-card';
-                            card.innerHTML=`<div class='t-head'><strong>${t.name}</strong> <span class='t-mod'>${t.modality}</span></div>
-                                <div class='t-focus'>${t.focus.map(f=>`<span>#${f}</span>`).join(' ')}</div>
-                                <div class='t-meta'><span>${t.slots}</span> · <span>${t.remote?'Remote / In-person':'In-person only'}</span></div>
-                                <button class='primary-btn t-contact' type='button'>Contact</button>`;
-                            card.querySelector('.t-contact').addEventListener('click',()=>{
-                                alert('Contact flow demo: '+t.name);
-                            });
-                            host.appendChild(card);
-                        });
-                    }
-                    function filter(){
-                        const q = (document.getElementById('therapist-filter')?.value || '').trim().toLowerCase();
-                        if(!q) return render(data);
-                        const parts = q.split(/\s+/).filter(Boolean);
-                        const res = data.filter(t => parts.every(p => t.name.toLowerCase().includes(p) || t.focus.some(f=>f.includes(p)) || t.modality.toLowerCase().includes(p)));
-                        render(res);
-                    }
-                    window.addEventListener('DOMContentLoaded',()=>{
-                        render(data);
-                        const inp=document.getElementById('therapist-filter');
-                        if(inp) inp.addEventListener('input', ()=>{ filter(); });
-                        const clr=document.getElementById('therapist-clear'); if(clr) clr.addEventListener('click', ()=>{ if(inp){ inp.value=''; filter(); } });
-                    });
-                })();
+                                // Therapist directory fetch with localStorage cache fallback
+                                (function(){
+                                    const LS_KEY='therapistDirectoryCacheV1';
+                                    let data=[];
+                                    function render(list){
+                                        const host=document.getElementById('therapist-list'); if(!host) return;
+                                        host.innerHTML='';
+                                        if(!list.length){ host.innerHTML='<p class="text-muted">No matches.</p>'; return; }
+                                        list.forEach(t=>{
+                                            const card=document.createElement('div'); card.className='therapist-card';
+                                            card.innerHTML=`<div class='t-head'><strong>${t.name}</strong> <span class='t-mod'>${t.modality}</span></div>
+                                                <div class='t-focus'>${(t.focus||[]).map(f=>`<span>#${f}</span>`).join(' ')}</div>
+                                                <div class='t-meta'><span>${t.slots||'Schedule TBD'}</span> · <span>${t.remote?'Remote / In-person':'In-person only'}</span></div>
+                                                <button class='primary-btn t-contact' type='button'>Contact</button>`;
+                                            card.querySelector('.t-contact').addEventListener('click',()=>{ alert('Contact flow demo: '+t.name); });
+                                            host.appendChild(card);
+                                        });
+                                    }
+                                    function filter(){
+                                        const q=(document.getElementById('therapist-filter')?.value||'').trim().toLowerCase();
+                                        if(!q) return render(data);
+                                        const parts=q.split(/\s+/).filter(Boolean);
+                                        render(data.filter(t => parts.every(p => t.name.toLowerCase().includes(p) || (t.focus||[]).some(f=>f.includes(p)) || (t.modality||'').toLowerCase().includes(p))));
+                                    }
+                                    async function load(){
+                                        const cached=localStorage.getItem(LS_KEY);
+                                        if(cached){ try { data=JSON.parse(cached); } catch(e){} }
+                                        render(data);
+                                        try {
+                                            const res=await fetch('therapists.json',{cache:'no-cache'});
+                                            if(res.ok){ const fresh= await res.json(); if(Array.isArray(fresh)){ data=fresh; localStorage.setItem(LS_KEY, JSON.stringify(fresh)); filter(); } }
+                                        } catch(e){}
+                                    }
+                                    window.addEventListener('DOMContentLoaded',()=>{
+                                        load();
+                                        const inp=document.getElementById('therapist-filter'); if(inp) inp.addEventListener('input', filter);
+                                        const clr=document.getElementById('therapist-clear'); if(clr) clr.addEventListener('click', ()=>{ if(inp){ inp.value=''; filter(); } });
+                                    });
+                                })();
                 </script>
 
         <!-- Mind Flow React component (Babel) -->
@@ -197,6 +205,9 @@
             const scrollRef = React.useRef(null)
             const lastStarterRef = React.useRef(null)
             const [selectedMood, setSelectedMood] = React.useState(null)
+            const [tagInput, setTagInput] = React.useState('')
+            const [tags, setTags] = React.useState([])
+            const [lastInsightSig, setLastInsightSig] = React.useState(null)
 
             const startOptions = [
                 { label: 'Just checking in', text: "Just checking in — wondering how I'm doing today." },
@@ -253,6 +264,7 @@
                 const existing = logs.findIndex(l => l.date === entry.date)
                 const next = existing !== -1 ? logs.slice().map((v,i)=> i===existing?entry:v) : [...logs, entry]
                 persistLogs(next)
+                analyzeInsights(next)
             }
 
             function handleSendText(raw){
@@ -263,12 +275,48 @@
                 setIsTyping(true)
                 const moodMatch = (text||'').match(/mood\s*[:\-]?\s*([1-5])(?:\s*[-–—]\s*(.+))?/i)
                 if (moodMatch){ addLog(Number(moodMatch[1]), moodMatch[2] ? moodMatch[2].trim() : '', { conversation: messages.slice(), starter: lastStarterRef.current }); setIsTyping(false); pushBot('Saved to Your Logs.'); return }
+                // Extract hashtags from message and merge into editable tag list (without auto-saving)
+                const found=(text.match(/#[\w-]{2,24}/g)||[]).map(t=>t.slice(1).toLowerCase());
+                if(found.length){ setTags(prev=>Array.from(new Set([...prev, ...found])).slice(0,12)); }
                 setTimeout(()=>{
                     setIsTyping(false)
                     if (detectCrisis(text)){ pushBot("I'm worried by what you shared. If you're in immediate danger, call emergency services."); return }
                     pushBot('Thanks for sharing — can you tell me how long you\'ve felt like this?')
                     lastStarterRef.current = null
                 }, 600)
+            }
+
+            function addTagFromInput(){
+                const val=tagInput.trim().toLowerCase().replace(/^#/,'');
+                if(!val) return;
+                setTags(prev => prev.includes(val) ? prev : [...prev, val].slice(0,12));
+                setTagInput('');
+            }
+            function removeTag(t){ setTags(prev => prev.filter(x=>x!==t)); }
+
+            function saveMoodEntry(){
+                if(!selectedMood) return;
+                // include new hashtags from current input if any
+                const inlineTags=(input.match(/#[\w-]{2,24}/g)||[]).map(t=>t.slice(1).toLowerCase());
+                const allTags=Array.from(new Set([...tags, ...inlineTags]));
+                addLog(selectedMood, input.trim(), { conversation: messages.slice(), starter: currentStarter, tags: allTags });
+                setInput(''); setSelectedMood(null); setTags([]); setTagInput(''); pushBot('Mood saved.');
+            }
+
+            function analyzeInsights(allLogs){
+                if(!allLogs.length) return;
+                const recent = allLogs.slice(-7);
+                const lows = recent.filter(l=>l.mood <=2).length;
+                const highs = recent.filter(l=>l.mood >=4).length;
+                const avg = (recent.reduce((a,b)=>a+(b.mood||0),0)/recent.length).toFixed(2);
+                const sig = `${recent.length}|${lows}|${highs}|${avg}`;
+                if(sig===lastInsightSig) return;
+                // Choose one insight message based on pattern priority
+                let msg=null;
+                if(lows >=3) msg = 'Noticing several low moods this week. Would a small grounding activity help?';
+                else if(highs >=3) msg = 'Nice streak of higher moods recently—maybe journal what contributed?';
+                else if(avg && recent.length>=5) msg = `Your 7-day average mood is ${avg}. Want to set a gentle goal?`;
+                if(msg){ pushBot(msg,{insight:true}); setLastInsightSig(sig); }
             }
 
             function handleInlineFormSubmit(e){
@@ -309,6 +357,19 @@
                                 ))}
                                 <button type="button" className="mood-chip clear" onClick={()=>setSelectedMood(null)} aria-pressed={selectedMood===null}>Clear</button>
                             </div>
+                            <div className="tag-editor" style={{ marginTop:12 }}>
+                                <label style={{ fontSize:12, fontWeight:600, display:'block', marginBottom:4 }}>Tags</label>
+                                <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:6 }}>
+                                    {tags.map(t => (
+                                        <span key={t} className="tag-chip" style={{ display:'inline-flex', alignItems:'center', gap:4 }}>
+                                            #{t}<button type="button" aria-label={`Remove tag ${t}`} onClick={()=>removeTag(t)} style={{ background:'transparent', border:'none', cursor:'pointer', fontSize:14, lineHeight:1 }}>✕</button>
+                                        </span>
+                                    ))}
+                                    <input aria-label="Add tag" value={tagInput} onChange={e=>setTagInput(e.target.value)} onKeyDown={e=>{ if(e.key==='Enter'){ e.preventDefault(); addTagFromInput(); } }} placeholder="Add tag" style={{ minWidth:90, padding:'4px 8px', border:'1px solid var(--glass-border)', borderRadius:8 }} />
+                                    <button type="button" className="control-btn" style={{ padding:'4px 10px' }} onClick={addTagFromInput}>Add</button>
+                                </div>
+                                <div style={{ fontSize:11, opacity:.6 }}>Hashtags you type (e.g. #anxiety) are auto-suggested here before saving.</div>
+                            </div>
                         </div>
 
                         <div ref={scrollRef} style={{ maxHeight: 300, overflowY: 'auto', marginTop: 18 }}>
@@ -325,7 +386,7 @@
                                 <button onClick={()=>handleSendText()} className="primary-btn">Send</button>
                             </div>
                             <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-                                <button type="button" disabled={!selectedMood} className="control-btn" onClick={()=>{ if(!selectedMood) return; addLog(selectedMood, input.trim(), { conversation: messages.slice(), starter: currentStarter, tags: (input.match(/#[\w-]{2,24}/g)||[]).map(t=>t.slice(1)) }); setInput(''); setSelectedMood(null); pushBot('Mood saved.'); }}>Save Mood</button>
+                                <button type="button" disabled={!selectedMood} className="control-btn" onClick={saveMoodEntry}>Save Mood</button>
                                 <button onClick={clearLogs} className="secondary-btn">Clear logs</button>
                                 <button onClick={resetConversation} className="control-btn">Reset chat</button>
                             </div>

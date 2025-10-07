@@ -328,6 +328,17 @@ input:focus, textarea:focus { border-color: var(--accent-teal); box-shadow: 0 6p
 .mood-chip:hover { background: linear-gradient(90deg,var(--accent-teal),var(--accent-purple)); color:#fff; }
 .mood-chip.active { background: linear-gradient(90deg,var(--accent-teal),var(--accent-purple)); color:#fff; box-shadow:0 4px 14px rgba(0,0,0,0.1); }
 .mood-chip.clear { background: rgba(255,255,255,0.4); font-weight:600; }
+.mood-chip:focus-visible { outline:2px solid var(--accent-teal); outline-offset:2px; }
+
+/* Tag chips */
+.tag-chip { background: rgba(255,255,255,0.65); border:1px solid var(--glass-border); padding:4px 8px; border-radius:20px; font-size:12px; font-weight:600; }
+body.feed-theme-dark .tag-chip { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
+.tag-chip button { color: inherit; }
+
+/* Chart reveal animation */
+.chart-hidden { opacity:0; height:0; overflow:hidden; padding-top:0!important; padding-bottom:0!important; }
+.chart-revealed { animation: chartFadeIn .55s cubic-bezier(.16,.84,.44,1) forwards; }
+@keyframes chartFadeIn { 0% { opacity:0; transform: translateY(12px); } 100% { opacity:1; transform:translateY(0); } }
 
 /* Therapist directory */
 .therapist-list { display:grid; gap:14px; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); margin-top:12px; }
