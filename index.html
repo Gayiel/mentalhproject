@@ -140,6 +140,10 @@
                         <input type="checkbox" id="consent-retain" />
                         <span>Retain session transcript locally for next visit.</span>
                     </label>
+                    <label style="display:flex; gap:6px; align-items:flex-start; font-size:0.78rem;">
+                        <input type="checkbox" id="consent-analytics" />
+                        <span>Anonymous usage analytics (improve supportive responses).</span>
+                    </label>
                     <div style="display:flex; gap:8px; margin-top:6px;">
                         <button type="submit" class="primary-btn" style="padding:8px 14px; font-size:0.75rem;">Accept & Continue</button>
                         <button type="button" id="consent-decline" class="control-btn" style="padding:8px 14px; font-size:0.75rem;">Decline</button>
@@ -243,9 +247,7 @@
             const [currentStarter, setCurrentStarter] = React.useState(null)
             const scrollRef = React.useRef(null)
             const lastStarterRef = React.useRef(null)
-            const [selectedMood, setSelectedMood] = React.useState(null)
-            const [tagInput, setTagInput] = React.useState(() => localStorage.getItem('mf_tag_draft') || '')
-            const [tags, setTags] = React.useState([])
+            // Removed mood & tag editing UI for a calmer minimal chat surface
             const [lastInsightSig, setLastInsightSig] = React.useState(null)
             const [insightsEnabled, setInsightsEnabled] = React.useState(() => localStorage.getItem('mf_insights_enabled') !== 'false')
             const [riskMeta, setRiskMeta] = React.useState({ level:'normal', score:0 })
@@ -316,13 +318,15 @@
                 function finalize(accepted){
                     const nlp = accepted && document.getElementById('consent-nlp').checked;
                     const retain = accepted && document.getElementById('consent-retain').checked;
-                    const obj = { accepted, nlp, retain, ts: Date.now() };
+                    const analytics = accepted && document.getElementById('consent-analytics').checked;
+                    const obj = { accepted, nlp, retain, analytics, ts: Date.now() };
                     localStorage.setItem('mf_consent', JSON.stringify(obj));
                     setConsent({...obj, ready:true});
                     if(cb) cb.classList.add('hidden');
                     if(!retain){ localStorage.removeItem('accessibleMoodHistory'); }
                     setSessionPhase('active');
                     pushIntro(obj);
+                    analyticsEvent('consent_saved', obj);
                 }
                 form && form.addEventListener('submit', e=>{ e.preventDefault(); finalize(true); });
                 decline && decline.addEventListener('click', ()=>finalize(false));
@@ -341,7 +345,7 @@
             function pushUser(text){ setMessages(prev=>[...prev,{type:'user', text}]) }
             function pushBot(text, meta){ setMessages(prev=>[...prev,{type:'bot', text, meta}]) }
 
-            function addActions(list){ setActions(list.map(a=>({...a,id:crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)}))) }
+            function addActions(list){ setActions(list.map(a=>({...a,id:crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)}))); analyticsEvent('actions_shown',{labels:list.map(x=>x.label)}) }
             function clearActions(){ setActions([]) }
 
             const crisisPatterns = ['kill myself','end my life','suicide','hurt myself','cutting','no reason to live','i might harm']
@@ -407,10 +411,14 @@
 
             function detectIntent(text){
                 const t = (text||'').toLowerCase();
-                if(/anxi|panic|overwhelm/.test(t)) return 'anxiety';
+                if(/anxi|panic|overwhelm|stress|stressed/.test(t)) return 'anxiety';
                 if(/sleep|insomnia|tired/.test(t)) return 'sleep';
                 if(/lonely|alone|isolat/.test(t)) return 'lonely';
                 if(/no motivation|unmotivated|cant focus|can't focus/.test(t)) return 'motivation';
+                if(/burn ?out|burned out|burnt out|exhausted/.test(t)) return 'burnout';
+                if(/grief|loss|lost someone|passed away/.test(t)) return 'grief';
+                if(/relationship|breakup|partner|argument/.test(t)) return 'relationship';
+                if(/anger|furious|rage/.test(t)) return 'anger';
                 if(/thank|thanks|appreciate/.test(t)) return 'gratitude';
                 return 'general';
             }
@@ -448,6 +456,38 @@
                         addActions([
                             { label:'Yes plan', handler: ()=>{ pushBot('Pick one task under 5 min. After finishing, send me "done" and we can reflect.'); clearActions(); } },
                             { label:'Skip', handler: ()=>{ pushBot('Understood. Take your time.'); clearActions(); } }
+                        ]);
+                        break;
+                    case 'burnout':
+                        pushBot('Burnout feelings can build slowly. Would a tiny recovery micro-step (rest, hydration, brief walk) help?');
+                        setLastSuggestion('burnout');
+                        addActions([
+                            { label:'Suggest micro-step', handler: ()=>{ pushBot('Try a 2-minute pause: stand, stretch, slow exhale. Small resets matter.'); clearActions(); } },
+                            { label:'Skip', handler: ()=>{ pushBot('Okay — we can just keep talking.'); clearActions(); } }
+                        ]);
+                        break;
+                    case 'grief':
+                        pushBot('I hear grief in what you shared. There is no right timetable. Would grounding or a remembrance prompt help?');
+                        addActions([
+                            { label:'Grounding', handler: startGrounding },
+                            { label:'Remembrance prompt', handler: ()=>{ pushBot('If it feels okay: What is one comforting memory you’d like to hold for a moment?'); clearActions(); } },
+                            { label:'Just listen', handler: ()=>{ pushBot('I’m here and listening.'); clearActions(); } }
+                        ]);
+                        break;
+                    case 'relationship':
+                        pushBot('Relationship stress can be heavy. Want a brief communication tip or coping strategy?');
+                        addActions([
+                            { label:'Communication tip', handler: ()=>{ pushBot('Try “I feel … when … because …” to express needs without blame.'); clearActions(); } },
+                            { label:'Coping strategy', handler: ()=>{ pushBot('Short pause + grounding before responding can reduce escalation.'); clearActions(); } },
+                            { label:'Skip', handler: ()=>{ pushBot('Okay — share more if you wish.'); clearActions(); } }
+                        ]);
+                        break;
+                    case 'anger':
+                        pushBot('Anger can signal unmet needs. Would paced breathing or a reframing prompt help?');
+                        addActions([
+                            { label:'Paced breathing', handler: startBreathing },
+                            { label:'Reframing prompt', handler: ()=>{ pushBot('What need of yours feels threatened right now? Naming it can reduce intensity.'); clearActions(); } },
+                            { label:'Skip', handler: ()=>{ pushBot('Alright. I can stay with you while you process.'); clearActions(); } }
                         ]);
                         break;
                     case 'gratitude':
@@ -523,11 +563,16 @@
                 pushBot(`Session summary: ${userMsgs} messages shared${today? ', mood saved today at level '+today.mood:''}. Remember this space is not clinical care but a reflective aid.`);
                 pushBot('You can clear this conversation or start fresh. Take care of yourself.');
                 setSessionPhase('ended');
+                analyticsEvent('session_end',{userMsgs});
                 addActions([
                     { label:'Start new session', handler: ()=>{ setMessages([]); setSessionPhase('active'); pushIntro(consent); clearActions(); } },
                     { label:'Clear & close', handler: ()=>{ setMessages([]); setSessionPhase('ended'); clearActions(); } }
                 ]);
             }
+            function analyticsEvent(name, payload){
+                try { const c = consent||{}; if(!c.analytics) return; window._mfAnalytics = window._mfAnalytics||[]; window._mfAnalytics.push({ts:Date.now(), name, payload}); } catch(e){}
+            }
+            window._mfTest = window._mfTest || {}; window._mfTest.detectIntent = detectIntent;
 
             function addTagFromInput(){
                 const val=tagInput.trim().toLowerCase().replace(/^#/,'');
@@ -597,39 +642,13 @@
                             This assistant is not a substitute for professional diagnosis or emergency services. Risk level: <strong>{riskMeta.level}</strong>{riskMeta.level!=='normal' ? ` (sentiment ${riskMeta.score})` : ''}.
                         </div>
 
-                        <div style={{ marginTop: 16 }}>
-                            <strong style={{ fontSize: 13 }}>Select a mood (optional)</strong>
-                            <div className="mf-mood-picker" role="group" aria-label="Select mood" style={{ display:'flex', gap:8, marginTop:8, flexWrap:'wrap' }}>
-                                {[5,4,3,2,1].map(v => (
-                                    <button type="button" key={v} className={"mood-chip" + (selectedMood===v?" active":"")} onClick={()=>setSelectedMood(v)} aria-pressed={selectedMood===v}>{v}</button>
-                                ))}
-                                <button type="button" className="mood-chip clear" onClick={()=>setSelectedMood(null)} aria-pressed={selectedMood===null}>Clear</button>
-                            </div>
-                            <div className="tag-editor" style={{ marginTop:12 }}>
-                                <label style={{ fontSize:12, fontWeight:600, display:'block', marginBottom:4 }}>Tags</label>
-                                <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:6 }}>
-                                    {tags.map(t => (
-                                        <span key={t} className="tag-chip" style={{ display:'inline-flex', alignItems:'center', gap:4 }}>
-                                            #{t}<button type="button" aria-label={`Remove tag ${t}`} onClick={()=>removeTag(t)} style={{ background:'transparent', border:'none', cursor:'pointer', fontSize:14, lineHeight:1 }}>✕</button>
-                                        </span>
-                                    ))}
-                                            <input aria-label="Add tag" value={tagInput} onChange={e=>{ setTagInput(e.target.value); localStorage.setItem('mf_tag_draft', e.target.value); }} onKeyDown={e=>{ if(e.key==='Enter'){ e.preventDefault(); addTagFromInput(); } }} placeholder="Add tag" style={{ minWidth:90, padding:'4px 8px', border:'1px solid var(--glass-border)', borderRadius:8 }} />
-                                    <button type="button" className="control-btn" style={{ padding:'4px 10px' }} onClick={addTagFromInput}>Add</button>
-                                </div>
-                                <div style={{ fontSize:11, opacity:.6 }}>Hashtags you type (e.g. #anxiety) are auto-suggested here before saving.</div>
-                                <div style={{ marginTop:8, display:'flex', gap:8, flexWrap:'wrap', alignItems:'center' }}>
-                                    <button
-                                        type="button"
-                                        className="control-btn insights-toggle"
-                                        aria-pressed={insightsEnabled}
-                                        aria-label={insightsEnabled? 'Disable automated mood insights' : 'Enable automated mood insights'}
-                                        title={insightsEnabled? 'Disable automated mood insights' : 'Enable automated mood insights'}
-                                        onClick={()=>{ const next=!insightsEnabled; setInsightsEnabled(next); localStorage.setItem('mf_insights_enabled', String(next)); if(!next){ showToast && showToast('Insights disabled','warn'); } else { showToast && showToast('Insights enabled'); analyzeInsights(logs);} }}>
-                                        {insightsEnabled? 'Disable Insights' : 'Enable Insights'}
-                                    </button>
-                                    <span style={{ fontSize:10, opacity:.55, maxWidth:220 }}>Insights look for simple patterns only and are not a diagnosis.</span>
-                                </div>
-                            </div>
+                        <div style={{ marginTop:14, display:'flex', gap:8, flexWrap:'wrap', alignItems:'center' }}>
+                            <button type="button" className="control-btn insights-toggle" aria-pressed={insightsEnabled} aria-label={insightsEnabled? 'Disable automated mood insights' : 'Enable automated mood insights'} title={insightsEnabled? 'Disable automated mood insights' : 'Enable automated mood insights'} onClick={()=>{ const next=!insightsEnabled; setInsightsEnabled(next); localStorage.setItem('mf_insights_enabled', String(next)); if(!next){ showToast && showToast('Insights disabled','warn'); } else { showToast && showToast('Insights enabled'); analyzeInsights(logs);} }}>
+                                {insightsEnabled? 'Disable Insights' : 'Enable Insights'}
+                            </button>
+                            <button type="button" className="control-btn" onClick={()=>{ setMessages([]); setSessionPhase('active'); pushBot('New session started. Share anything when ready.'); analyticsEvent('session_restart'); }}>New Session</button>
+                            <button type="button" className="control-btn" onClick={()=>{ showHotlines(); analyticsEvent('emergency_exit'); }}>Emergency Exit</button>
+                            <span style={{ fontSize:10, opacity:.55 }}>Insights are simple pattern notices, not a diagnosis.</span>
                         </div>
 
                         <div ref={scrollRef} style={{ maxHeight: 300, overflowY: 'auto', marginTop: 18 }}>
@@ -645,11 +664,10 @@
                         </div>
                         <div style={{ display: 'flex', flexDirection:'column', gap: 10, marginTop: 12 }}>
                             <div style={{ display:'flex', gap:8 }}>
-                                <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter' && handleSendText()} placeholder={sessionPhase==='init' ? 'Review privacy to begin...' : (sessionPhase==='ended' ? 'Session ended — start new session?' : (selectedMood?`Optional note for mood ${selectedMood}`:'Type your message here...'))} disabled={sessionPhase==='init' || sessionPhase==='ended'} />
+                                <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter' && handleSendText()} placeholder={sessionPhase==='init' ? 'Review privacy to begin...' : (sessionPhase==='ended' ? 'Session ended — start new session?' : 'Type your message here...')} disabled={sessionPhase==='init' || sessionPhase==='ended'} />
                                 <button onClick={()=>handleSendText()} className="primary-btn">Send</button>
                             </div>
                             <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-                                <button type="button" disabled={!selectedMood} className="control-btn" onClick={saveMoodEntry}>Save Mood</button>
                                 <button onClick={clearLogs} className="secondary-btn">Clear logs</button>
                                 <button onClick={resetConversation} className="control-btn">Reset chat</button>
                                 <button type="button" className="control-btn" onClick={()=>endSession()}>End Session</button>
