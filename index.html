@@ -389,11 +389,18 @@
                                     <button type="button" className="control-btn" style={{ padding:'4px 10px' }} onClick={addTagFromInput}>Add</button>
                                 </div>
                                 <div style={{ fontSize:11, opacity:.6 }}>Hashtags you type (e.g. #anxiety) are auto-suggested here before saving.</div>
-                                        <div style={{ marginTop:8 }}>
-                                            <button type="button" className="control-btn insights-toggle" aria-pressed={insightsEnabled} onClick={()=>{ const next=!insightsEnabled; setInsightsEnabled(next); localStorage.setItem('mf_insights_enabled', String(next)); if(!next){ showToast && showToast('Insights disabled','warn'); } else { showToast && showToast('Insights enabled'); analyzeInsights(logs);} }}>
-                                                {insightsEnabled? 'Disable Insights' : 'Enable Insights'}
-                                            </button>
-                                        </div>
+                                <div style={{ marginTop:8, display:'flex', gap:8, flexWrap:'wrap', alignItems:'center' }}>
+                                    <button
+                                        type="button"
+                                        className="control-btn insights-toggle"
+                                        aria-pressed={insightsEnabled}
+                                        aria-label={insightsEnabled? 'Disable automated mood insights' : 'Enable automated mood insights'}
+                                        title={insightsEnabled? 'Disable automated mood insights' : 'Enable automated mood insights'}
+                                        onClick={()=>{ const next=!insightsEnabled; setInsightsEnabled(next); localStorage.setItem('mf_insights_enabled', String(next)); if(!next){ showToast && showToast('Insights disabled','warn'); } else { showToast && showToast('Insights enabled'); analyzeInsights(logs);} }}>
+                                        {insightsEnabled? 'Disable Insights' : 'Enable Insights'}
+                                    </button>
+                                    <span style={{ fontSize:10, opacity:.55, maxWidth:220 }}>Insights look for simple patterns only and are not a diagnosis.</span>
+                                </div>
                             </div>
                         </div>
 
