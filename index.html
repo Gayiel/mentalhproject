@@ -12,6 +12,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script>window.MF_PUBLIC_FEED = true; /* feature flag: public read-only feed */</script>
     <script defer src="public-feed.js"></script>
+    <script defer src="riskClassifier.js"></script>
     </head>
     <body>
     <div id="legacy-app" data-legacy>
@@ -125,6 +126,26 @@
         </footer>
 
         <div id="toast-area" aria-live="polite" aria-atomic="true"></div>
+        <div id="consent-banner" class="consent-banner hidden" role="dialog" aria-modal="true" aria-labelledby="consent-title">
+            <div class="cb-inner">
+                <h3 id="consent-title" style="margin:0 0 6px; font-size:1rem;">Session & Privacy</h3>
+                <p style="margin:0 0 10px; font-size:0.8rem; line-height:1.3">Mind Flow is a supportive assistant, not a clinical tool. Messages stay in your browser unless you opt-in to external analysis for improved emotional detection.</p>
+                <form id="consent-form" style="display:flex; flex-direction:column; gap:8px;">
+                    <label style="display:flex; gap:6px; align-items:flex-start; font-size:0.78rem;">
+                        <input type="checkbox" id="consent-nlp" />
+                        <span>Allow external sentiment analysis API (may send anonymized text).</span>
+                    </label>
+                    <label style="display:flex; gap:6px; align-items:flex-start; font-size:0.78rem;">
+                        <input type="checkbox" id="consent-retain" />
+                        <span>Retain session transcript locally for next visit.</span>
+                    </label>
+                    <div style="display:flex; gap:8px; margin-top:6px;">
+                        <button type="submit" class="primary-btn" style="padding:8px 14px; font-size:0.75rem;">Accept & Continue</button>
+                        <button type="button" id="consent-decline" class="control-btn" style="padding:8px 14px; font-size:0.75rem;">Decline</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <script src="script.js"></script>
                                 <script>
@@ -226,6 +247,10 @@
             const [tags, setTags] = React.useState([])
             const [lastInsightSig, setLastInsightSig] = React.useState(null)
             const [insightsEnabled, setInsightsEnabled] = React.useState(() => localStorage.getItem('mf_insights_enabled') !== 'false')
+            const [riskMeta, setRiskMeta] = React.useState({ level:'normal', score:0 })
+            const [consent, setConsent] = React.useState({ nlp:false, retain:false, ready:false })
+            const sessionIdRef = React.useRef(localStorage.getItem('mf_session_id') || (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)))
+            React.useEffect(()=>{ localStorage.setItem('mf_session_id', sessionIdRef.current) }, [])
 
             const startOptions = [
                 { label: 'Just checking in', text: "Just checking in — wondering how I'm doing today." },
@@ -269,6 +294,30 @@
 
             React.useEffect(()=>{ if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight }, [messages, isTyping])
 
+            // Consent banner mount
+            React.useEffect(()=>{
+                const stored = safeParse(localStorage.getItem('mf_consent'));
+                if(stored && stored.accepted){ setConsent({...stored, ready:true}); return; }
+                const cb = document.getElementById('consent-banner'); if(cb) cb.classList.remove('hidden');
+                const form = document.getElementById('consent-form');
+                const decline = document.getElementById('consent-decline');
+                function finalize(accepted){
+                    const nlp = accepted && document.getElementById('consent-nlp').checked;
+                    const retain = accepted && document.getElementById('consent-retain').checked;
+                    const obj = { accepted, nlp, retain, ts: Date.now() };
+                    localStorage.setItem('mf_consent', JSON.stringify(obj));
+                    setConsent({...obj, ready:true});
+                    if(cb) cb.classList.add('hidden');
+                    if(!retain){ localStorage.removeItem('accessibleMoodHistory'); }
+                }
+                form && form.addEventListener('submit', e=>{ e.preventDefault(); finalize(true); });
+                decline && decline.addEventListener('click', ()=>finalize(false));
+                return ()=>{
+                    form && form.removeEventListener('submit', ()=>{});
+                    decline && decline.removeEventListener('click', ()=>{});
+                }
+            },[])
+
             function pushUser(text){ setMessages(prev=>[...prev,{type:'user', text}]) }
             function pushBot(text, meta){ setMessages(prev=>[...prev,{type:'bot', text, meta}]) }
 
@@ -298,6 +347,15 @@
                 if(found.length){ setTags(prev=>Array.from(new Set([...prev, ...found])).slice(0,12)); }
                 setTimeout(()=>{
                     setIsTyping(false)
+                    // Risk evaluation
+                    try {
+                        if (typeof classifyRisk === 'function') {
+                            const meta = classifyRisk(text, messages);
+                            setRiskMeta(meta);
+                            if(meta.level==='high') { pushBot("I sense this might be urgent. If you're in immediate danger please contact emergency services. Would you like hotline options?"); lastStarterRef.current=null; return }
+                            if(meta.level==='moderate') { pushBot('That sounds really tough. Would a short grounding exercise help?'); lastStarterRef.current=null; return }
+                        }
+                    } catch(e){}
                     if (detectCrisis(text)){ pushBot("I'm worried by what you shared. If you're in immediate danger, call emergency services."); return }
                     pushBot('Thanks for sharing — can you tell me how long you\'ve felt like this?')
                     lastStarterRef.current = null
@@ -367,6 +425,9 @@
                                     <button key={i} onClick={() => { lastStarterRef.current = opt.label; setCurrentStarter(opt.label); setInput(opt.text); setTimeout(()=>handleSendText(opt.text), 200) }} className="control-btn">{opt.label}</button>
                                 ))}
                             </div>
+                        </div>
+                        <div style={{ background:'rgba(0,0,0,0.04)', padding:'8px 10px', borderRadius:8, marginTop:10, fontSize:11, lineHeight:1.4 }}>
+                            This assistant is not a substitute for professional diagnosis or emergency services. Risk level: <strong>{riskMeta.level}</strong>{riskMeta.level!=='normal' ? ` (sentiment ${riskMeta.score})` : ''}.
                         </div>
 
                         <div style={{ marginTop: 16 }}>
