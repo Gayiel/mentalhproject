@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Crisis Detection Test</title>
+</head>
+<body>
+    <h2>Crisis Detection Test Results</h2>
+    <div id="test-results"></div>
+
+    <script>
+        // Test the crisis detection logic
+        function testCrisisDetection() {
+            const crisisTerms = [
+                'kill myself', 'end my life', 'take my life', 'taking my life',
+                'suicide', 'suicidal', 'want to die', 'going to die',
+                'hurt myself', 'harm myself', 'cut myself',
+                'no reason to live', 'better off dead', 'end it all', 
+                'can\'t go on', 'give up', 'not worth living',
+                'thoughts of suicide', 'thinking about suicide',
+                'thinking about death', 'want to disappear',
+                'don\'t want to be here', 'wish I was dead'
+            ];
+
+            function isCrisis(message) {
+                const text = message.toLowerCase();
+                return crisisTerms.some(term => text.includes(term));
+            }
+
+            // Test cases
+            const testMessages = [
+                "I have been thinking about taking my life", // This should trigger crisis
+                "I feel lonely",
+                "I want to die", // This should trigger crisis
+                "I'm having thoughts of suicide", // This should trigger crisis
+                "I can't sleep",
+                "I wish I was dead", // This should trigger crisis
+                "I'm feeling anxious"
+            ];
+
+            const results = testMessages.map(msg => ({
+                message: msg,
+                isCrisis: isCrisis(msg),
+                expected: msg.includes('taking my life') || msg.includes('want to die') || 
+                         msg.includes('thoughts of suicide') || msg.includes('wish I was dead')
+            }));
+
+            // Display results
+            const resultsDiv = document.getElementById('test-results');
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.style.padding = '10px';
+                div.style.margin = '5px';
+                div.style.border = '1px solid #ccc';
+                div.style.backgroundColor = result.isCrisis === result.expected ? '#d4edda' : '#f8d7da';
+                
+                div.innerHTML = `
+                    <strong>Message:</strong> "${result.message}"<br>
+                    <strong>Crisis Detected:</strong> ${result.isCrisis}<br>
+                    <strong>Expected:</strong> ${result.expected}<br>
+                    <strong>Status:</strong> ${result.isCrisis === result.expected ? '✅ CORRECT' : '❌ FAILED'}
+                `;
+                resultsDiv.appendChild(div);
+            });
+        }
+
+        // Run test when page loads
+        window.onload = testCrisisDetection;
+    </script>
+</body>
+</html>

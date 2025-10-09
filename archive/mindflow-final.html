@@ -451,14 +451,9 @@
             isCrisis(message) {
                 const text = message.toLowerCase();
                 const crisisTerms = [
-                    'kill myself', 'end my life', 'take my life', 'taking my life',
-                    'suicide', 'suicidal', 'want to die', 'going to die',
-                    'hurt myself', 'harm myself', 'cut myself',
-                    'no reason to live', 'better off dead', 'end it all', 
-                    'can\'t go on', 'give up', 'not worth living',
-                    'thoughts of suicide', 'thinking about suicide',
-                    'thinking about death', 'want to disappear',
-                    'don\'t want to be here', 'wish I was dead'
+                    'kill myself', 'end my life', 'suicide', 'want to die',
+                    'hurt myself', 'harm myself', 'no reason to live',
+                    'better off dead', 'end it all', 'can\'t go on'
                 ];
                 
                 return crisisTerms.some(term => text.includes(term));

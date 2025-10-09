@@ -1,0 +1,367 @@
+// Enhanced MindFlow - Core Conversation Module
+// Provides modular conversation support functions with improved support
+
+// Core intents map for easy reference 
+// Using string literals for direct compatibility with the original conversationCore.js
+const INTENTS = {
+  GREETING: 'greeting',
+  ANXIETY: 'anxiety',
+  SLEEP: 'sleep', 
+  LONELY: 'lonely',
+  MOTIVATION: 'motivation',
+  BURNOUT: 'burnout',
+  GRIEF: 'grief',
+  RELATIONSHIP: 'relationship',
+  ANGER: 'anger',
+  GRATITUDE: 'gratitude',
+  EXISTENTIAL: 'existential',
+  ADJUSTMENT: 'adjustment',
+  WORK: 'work',
+  GENERAL: 'general'
+};
+
+// Core conversation module
+const conversationCore = (function() {
+  // Private constants
+  const BREATH_CYCLE_SECONDS = 12;
+  const BREATH_CYCLES = 3;
+  const GROUNDING_DELAY_BASE = 800;
+  
+  // Use the original function names internally to maintain compatibility
+
+  // Tone adapters
+  const toneAdapters = {
+    neutral: text => text,
+    gentle: text => {
+      // Soften language with more reassuring phrases
+      text = text.replace(/Would (you like|it help)/gi, 'Might it help');
+      text = text.replace(/You should/gi, 'You might consider');
+      text = text.replace(/You need to/gi, 'It could be helpful to');
+      text = text.replace(/(?<![A-Za-z])I /gi, 'I\'m wondering ');
+      return text;
+    },
+    motivating: text => {
+      // Add motivational elements
+      text = text.replace(/(?:Maybe you could|You could try|Consider)/gi, 'You can definitely');
+      text = text.replace(/Would you like to try/gi, 'Let\'s try');
+      text = text.replace(/difficult/gi, 'challenging but achievable');
+      return text;
+    }
+  };
+
+  // Conversation starters with icons - match original structure but add icons
+  function getStartOptions() {
+    return [
+      { label: 'Just checking in', text: "Just checking in — wondering how I'm doing today.", icon: 'emoji_emotions' },
+      { label: 'Feeling stressed', text: "I've been feeling stressed and overwhelmed.", icon: 'psychiatry' },
+      { label: 'Feeling low', text: "I've been feeling down and sad.", icon: 'sentiment_sad' },
+      { label: 'Trouble sleeping', text: "I'm having trouble sleeping.", icon: 'bedtime' },
+      { label: 'Relationship issues', text: "I'm having some relationship challenges.", icon: 'group' },
+      { label: 'Work stress', text: "Work has been really stressful lately.", icon: 'work' }
+    ];
+  }
+
+  // Public methods
+  return {
+    // Get conversation starters
+    getStartOptions: function() {
+      return getStartOptions();
+    },
+
+    // Detect intent from user text
+    detectIntent: function(text) {
+      const t = (text || '').toLowerCase();
+      if(/^(\s*)?(hi|hey|hello|hiya|yo|sup|what's up|whats up|good (morning|afternoon|evening))\b/.test(t)) return 'greeting';
+      if(/anxi|panic|overwhelm|stress|stressed/.test(t)) return 'anxiety';
+      if(/sleep|insomnia|tired/.test(t)) return 'sleep';
+      if(/lonely|alone|isolat/.test(t)) return 'lonely';
+      if(/no motivation|unmotivated|cant focus|can't focus/.test(t)) return 'motivation';
+      if(/burn ?out|burned out|burnt out|exhausted/.test(t)) return 'burnout';
+      if(/grief|loss|lost someone|passed away/.test(t)) return 'grief';
+      if(/relationship|breakup|partner|argument/.test(t)) return 'relationship';
+      if(/anger|furious|rage/.test(t)) return 'anger';
+      if(/thank|thanks|appreciate/.test(t)) return 'gratitude';
+      if(/life (has not|hasn't|isn't) (what i (thought|believed|expected)|what i expected)|lost (purpose|direction)|no (purpose|meaning)|meaningless|no meaning|nothing makes sense/.test(t)) return 'existential';
+      if(/moving on (feels|is) (hard|difficult)|can't move on|cannot move on|stuck (on|moving)|hard to move on/.test(t)) return 'adjustment';
+      if(/work (has felt|feels|is) (hard|difficult|overwhelming)|going to work (is|feels) (hard|difficult)|every ?day (to )?work (has felt|feels) (hard|difficult)|work stress|work is draining|drained by work/.test(t)) return 'work';
+      return 'general';
+    },
+
+    // Route intent to appropriate response
+    routeIntent: function(ctx, intent, rawText) {
+      switch(intent) {
+        case 'existential':
+          ctx.pushBot('It sounds like there is a gap between how you hoped life would feel and how it is right now. That mismatch can feel disorienting.');
+          ctx.addActions([
+            { label:'Explore what changed', handler: ()=>{ ctx.pushBot('If you like: What expectations or plans feel most different now? Writing a short list can clarify themes.'); ctx.clearActions(); } },
+            { label:'Clarify values', handler: ()=>{ ctx.pushBot('Try listing 3 things still meaningful (even if small). Micro-alignment steps often rebuild direction.'); ctx.clearActions(); } },
+            { label:'Tiny stabilizing step', handler: ()=>{ ctx.pushBot('Pick one gentle anchor for today (hydrate, short walk, message a friend). Small anchors reduce the sense of drift.'); ctx.clearActions(); } },
+            { label:'Just listen', handler: ()=>{ ctx.pushBot('I can simply listen while you describe more. Take your time.'); ctx.clearActions(); } }
+          ]);
+          break;
+          
+        case 'adjustment':
+          ctx.pushBot('Moving on after change or loss can feel almost impossible — it usually means your mind is still processing the meaning of what happened.');
+          ctx.addActions([
+            { label:'Name what feels stuck', handler: ()=>{ ctx.pushBot('Complete this if you wish: "A part of me still holds onto ____ because ____". Naming it can soften the hold.'); ctx.clearActions(); } },
+            { label:'Gentle grief prompt', handler: ()=>{ ctx.pushBot('If grief is part of this: What is one quality or routine you miss that mattered? Honouring it is a form of forward motion.'); ctx.clearActions(); } },
+            { label:'Grounding', handler: ()=>this.startGrounding(ctx) },
+            { label:'Just listen', handler: ()=>{ ctx.pushBot('I am here — you can describe the difficult parts at your own pace.'); ctx.clearActions(); } }
+          ]);
+          break;
+          
+        case 'work':
+          ctx.pushBot('Work feeling difficult day after day can drain motivation and signal rising strain or early burnout. Want to explore or try a micro-adjustment?');
+          ctx.addActions([
+            { label:'Quick stress scan', handler: ()=>{ ctx.pushBot('List: (1) Top 2 draining tasks (2) One resource/support you do have (3) One boundary or 5-min recovery you could try today.'); ctx.clearActions(); } },
+            { label:'Micro-boundary tip', handler: ()=>{ ctx.pushBot('Example micro-boundary: a 3-min pause before switching tasks or a single clear "done for today" ritual. Tiny endings help recovery.'); ctx.clearActions(); } },
+            { label:'Grounding break', handler: ()=>this.startGrounding(ctx) },
+            { label:'Just listen', handler: ()=>{ ctx.pushBot('Okay — describe what a hard workday has been like. I will stay with you in that.'); ctx.clearActions(); } }
+          ]);
+          break;
+          
+        case 'anxiety':
+          ctx.pushBot('That sounds stressful. Would a brief grounding or breathing exercise be helpful?');
+          ctx.setLastSuggestion('grounding');
+          ctx.addActions([
+            { label:'Try grounding', handler: ()=>this.startGrounding(ctx) },
+            { label:'Show breathing', handler: ()=>this.startBreathing(ctx) },
+            { label:'Just listen', handler: ()=>{ ctx.pushBot('Okay, I am here. Share anything that feels important.'); ctx.clearActions(); } }
+          ]);
+          break;
+          
+        case 'sleep':
+          ctx.pushBot('Sleep struggles can be hard. Sometimes a gentle wind-down routine helps. Want a quick tip?');
+          ctx.setLastSuggestion('sleep-tip');
+          ctx.addActions([
+            { label:'Give a tip', handler: ()=>{ ctx.pushBot('Try a 5-minute screen-free break and a slow exhale pattern (4 in, 6 out) to cue rest.'); ctx.clearActions(); } },
+            { label:'Not now', handler: ()=>{ ctx.pushBot('No problem. We can revisit later.'); ctx.clearActions(); } }
+          ]);
+          break;
+          
+        case 'lonely':
+          ctx.pushBot('Feeling lonely is tough. Would exploring supportive community options help?');
+          ctx.setLastSuggestion('community');
+          ctx.addActions([
+            { label:'Suggest resources', handler: ()=>{ ctx.pushBot('Consider peer support lines or moderated online communities focused on shared interests.'); ctx.clearActions(); } },
+            { label:'Skip', handler: ()=>{ ctx.pushBot('Alright. I can simply listen.'); ctx.clearActions(); } }
+          ]);
+          break;
+          
+        case 'motivation':
+          ctx.pushBot('Motivation dips happen. Want a tiny action planning prompt?');
+          ctx.setLastSuggestion('action-plan');
+          ctx.addActions([
+            { label:'Yes plan', handler: ()=>{ ctx.pushBot('Pick one task under 5 min. After finishing, send me "done" and we can reflect.'); ctx.clearActions(); } },
+            { label:'Skip', handler: ()=>{ ctx.pushBot('Understood. Take your time.'); ctx.clearActions(); } }
+          ]);
+          break;
+          
+        case 'burnout':
+          ctx.pushBot('Burnout feelings can build slowly. Would a tiny recovery micro-step (rest, hydration, brief walk) help?');
+          ctx.setLastSuggestion('burnout');
+          ctx.addActions([
+            { label:'Suggest micro-step', handler: ()=>{ ctx.pushBot('Try a 2-minute pause: stand, stretch, slow exhale. Small resets matter.'); ctx.clearActions(); } },
+            { label:'Skip', handler: ()=>{ ctx.pushBot('Okay — we can just keep talking.'); ctx.clearActions(); } }
+          ]);
+          break;
+          
+        case 'grief':
+          ctx.pushBot('I hear grief in what you shared. There is no right timetable. Would grounding or a remembrance prompt help?');
+          ctx.addActions([
+            { label:'Grounding', handler: ()=>this.startGrounding(ctx) },
+            { label:'Remembrance prompt', handler: ()=>{ ctx.pushBot('If it feels okay: What is one comforting memory you\'d like to hold for a moment?'); ctx.clearActions(); } },
+            { label:'Just listen', handler: ()=>{ ctx.pushBot('I\'m here and listening.'); ctx.clearActions(); } }
+          ]);
+          break;
+          
+        case 'relationship':
+          ctx.pushBot('Relationship stress can be heavy. Want a brief communication tip or coping strategy?');
+          ctx.addActions([
+            { label:'Communication tip', handler: ()=>{ ctx.pushBot('Try "I feel … when … because …" to express needs without blame.'); ctx.clearActions(); } },
+            { label:'Coping strategy', handler: ()=>{ ctx.pushBot('Short pause + grounding before responding can reduce escalation.'); ctx.clearActions(); } },
+            { label:'Skip', handler: ()=>{ ctx.pushBot('Okay — share more if you wish.'); ctx.clearActions(); } }
+          ]);
+          break;
+          
+        case 'anger':
+          ctx.pushBot('Anger can signal unmet needs. Would paced breathing or a reframing prompt help?');
+          ctx.addActions([
+            { label:'Paced breathing', handler: ()=>this.startBreathing(ctx) },
+            { label:'Reframing prompt', handler: ()=>{ ctx.pushBot('What need of yours feels threatened right now? Naming it can reduce intensity.'); ctx.clearActions(); } },
+            { label:'Skip', handler: ()=>{ ctx.pushBot('Alright. I can stay with you while you process.'); ctx.clearActions(); } }
+          ]);
+          break;
+          
+        case 'gratitude':
+          ctx.pushBot('I appreciate you too. Anything else you\'d like to explore or should we begin wrapping up?');
+          break;
+          
+        case 'greeting':
+          ctx.pushBot('Hi there — I\'m here with you. Share anything, pick a starter, or tap "Not sure what to say".');
+          ctx.addActions([
+            { label:'Feeling stressed', handler: ()=>{ ctx.pushBot('Stress can really build. Want grounding or breathing?'); ctx.addActions([{label:'Grounding', handler:()=>this.startGrounding(ctx)},{label:'Breathing', handler:()=>this.startBreathing(ctx)},{label:'Just listen', handler:()=>{ ctx.pushBot('I can just listen — take your time.'); ctx.clearActions(); }}]); } },
+            { label:'Feeling low', handler: ()=>{ ctx.pushBot('Feeling low can be draining. A tiny supportive step or just space to talk — either is okay.'); ctx.clearActions(); } },
+            { label:'Just checking in', handler: ()=>{ ctx.pushBot('Alright — how have you been feeling lately?'); ctx.clearActions(); } }
+          ]);
+          break;
+          
+        default:
+          // Light theme cues to make reflection more structured
+          const lt = (rawText || '').toLowerCase();
+          const themes = [];
+          if(/work|office|job/.test(lt)) themes.push('work strain');
+          if(/tired|exhaust|drained/.test(lt)) themes.push('energy depletion');
+          if(/lost|direction|purpose|meaning/.test(lt)) themes.push('direction/purpose');
+          if(/hard to move on|moving on|stuck/.test(lt)) themes.push('adjustment grief');
+          const themeLine = themes.length ? `I\'m hearing possible themes: ${themes.join(', ')}. ` : '';
+          ctx.pushBot(themeLine + 'If it helps, you can share: (1) roughly how long this has felt this way, (2) what part feels most heavy, or (3) one tiny thing that has still helped a little. I can then suggest a micro-step.');
+          ctx.addActions([
+            { label:'Duration', handler: ()=>{ ctx.pushBot('How long has this been present (days, weeks, months)?'); ctx.clearActions(); } },
+            { label:'Heaviest part', handler: ()=>{ ctx.pushBot('What part of this feels heaviest on most days?'); ctx.clearActions(); } },
+            { label:'Tiny help', handler: ()=>{ ctx.pushBot('Name one small thing that helps even slightly (tea, music, stepping outside). We can build from it.'); ctx.clearActions(); } }
+          ]);
+      }
+    },
+
+    // Start grounding exercise
+    startGrounding: function(ctx) {
+      ctx.clearActions();
+      ctx.pushBot('Let\'s try a 5-4-3-2-1 grounding. Ready? (You can type stop anytime)');
+      
+      const pacingFactor = ctx.pacingFactor || 1;
+      const delayBase = GROUNDING_DELAY_BASE * pacingFactor;
+      
+      setTimeout(() => ctx.pushBot('Name 5 things you can see.'), delayBase);
+      setTimeout(() => ctx.pushBot('Great. Now 4 things you can touch.'), delayBase * 6);
+      setTimeout(() => ctx.pushBot('Now 3 things you can hear.'), delayBase * 12);
+      setTimeout(() => ctx.pushBot('Next 2 things you can smell or like the scent of.'), delayBase * 17.5);
+      setTimeout(() => ctx.pushBot('Finally 1 thing you appreciate about yourself right now.'), delayBase * 23);
+      setTimeout(() => ctx.pushBot('How do you feel now? A tiny shift counts.'), delayBase * 30);
+      
+      ctx.analyticsEvent && ctx.analyticsEvent('exercise_started', {type: 'grounding'});
+    },
+
+    // Start breathing exercise
+    startBreathing: function(ctx) {
+      ctx.clearActions();
+      ctx.pushBot('Let\'s do a brief paced breathing: Inhale 4, hold 2, exhale 6. I\'ll count a few cycles.');
+      
+      const pacingFactor = ctx.pacingFactor || 1;
+      let cycle = 0;
+      
+      function step() {
+        if (cycle >= BREATH_CYCLES) {
+          ctx.pushBot('Nice work. Notice any small change in tension?');
+          return;
+        }
+        cycle++;
+        ctx.pushBot(`Cycle ${cycle}: Inhale (4) ... Hold (2) ... Exhale (6).`);
+        setTimeout(step, BREATH_CYCLE_SECONDS * 1000 * pacingFactor);
+      }
+      
+      setTimeout(step, 800);
+      ctx.analyticsEvent && ctx.analyticsEvent('exercise_started', {type: 'breathing'});
+    },
+
+    // Show hotlines information
+    showHotlines: function(ctx) {
+      ctx.clearActions();
+      const region = localStorage.getItem('hotlineRegion') || 'us';
+      const map = {
+        us: '988 (Suicide & Crisis Lifeline) — call or text 988',
+        uk: 'Samaritans: 116 123',
+        ca: '988 (Talk Suicide Canada)',
+        au: 'Lifeline: 13 11 14'
+      };
+      ctx.pushBot(`Here are hotline details (${region.toUpperCase()}): ${map[region] || map.us}. If you are in immediate danger, contact local emergency services.`);
+      ctx.setEscalation && ctx.setEscalation(prev => ({...prev, accepted: true}));
+      ctx.analyticsEvent && ctx.analyticsEvent('hotlines_shown', {region});
+    },
+
+    // Offer high risk support
+    offerHighRiskSupport: function(ctx, meta) {
+      if (ctx.escalation && ctx.escalation.offered) {
+        ctx.pushBot('Please choose: hotline info, grounding, or just talk.');
+        return;
+      }
+      ctx.setEscalation && ctx.setEscalation(prev => ({...prev, offered: true}));
+      ctx.pushBot("I sense this may be urgent. You're not alone. I can show hotline info, guide grounding, or just listen. What would you like?");
+      ctx.addActions([
+        { label: 'Hotline info', handler: () => this.showHotlines(ctx) },
+        { label: 'Grounding', handler: () => this.startGrounding(ctx) },
+        { label: 'Just listen', handler: () => { ctx.pushBot('I will stay with you here. Type anything that comes up.'); ctx.clearActions(); } }
+      ]);
+      ctx.analyticsEvent && ctx.analyticsEvent('high_risk_support_offered', {risk_level: meta && meta.level || 'high'});
+    },
+
+    // End session
+    endSession: function(ctx) {
+      const userMsgs = ctx.messages ? ctx.messages.filter(m => m.type === 'user').length : 0;
+      const today = ctx.logs ? ctx.logs.find(l => l.date === new Date().toISOString().slice(0, 10)) : null;
+      ctx.pushBot(`Session summary: ${userMsgs} messages shared${today ? ', mood saved today at level ' + today.mood : ''}. Remember this space is not clinical care but a reflective aid.`);
+      ctx.pushBot('You can clear this conversation or start fresh. Take care of yourself.');
+      ctx.setSessionPhase && ctx.setSessionPhase('ended');
+      ctx.analyticsEvent && ctx.analyticsEvent('session_end', {userMsgs});
+      ctx.addActions([
+        { label: 'Start new session', handler: () => { ctx.resetConversation(); ctx.setSessionPhase('active'); ctx.clearActions(); } },
+        { label: 'Clear & close', handler: () => { ctx.resetConversation(); ctx.setSessionPhase('ended'); ctx.clearActions(); } }
+      ]);
+    },
+
+    // Apply tone to text based on user preference
+    applyTone: function(tone, text) {
+      if(!text) return text;
+      switch(tone){
+        case 'gentle': return text.replace(/^([^🌱])/,'🌱 $1');
+        case 'motivating':
+          if(/(session summary|hotline|risk|emergency)/i.test(text)) return text;
+          return text.replace(/^([^🔥])/,'🔥 $1');
+        default: return text;
+      }
+    },
+
+    // Prompt for direct risk check
+    promptDirectRiskCheck: function(ctx) {
+      ctx.pushBot('I need to ask directly: Are you having thoughts about harming yourself?');
+      ctx.analyticsEvent && ctx.analyticsEvent('direct_risk_check');
+    },
+
+    // Reinforce autonomy
+    reinforceAutonomy: function(ctx) {
+      ctx.pushBot('No matter what you\'re feeling, you have the strength to reach out for professional support. Would connecting with trained helpers be okay?');
+    },
+
+    // Maybe offer grounding
+    maybeOfferGrounding: function(ctx) {
+      if (ctx.lastSuggestion === 'grounding') return;
+      ctx.setLastSuggestion('grounding');
+      ctx.pushBot('That sounds really tough. Would a short grounding exercise help?');
+      ctx.addActions([
+        { label: 'Yes grounding', handler: () => this.startGrounding(ctx) },
+        { label: 'Breathing', handler: () => this.startBreathing(ctx) },
+        { label: 'No thanks', handler: () => { ctx.pushBot('Okay — I will just stay with you in this. Share anything you like.'); ctx.clearActions(); } }
+      ]);
+    }
+  };
+})();
+
+// Export for global access - match the structure of the original conversationCore.js
+window.conversationCore = {
+  detectIntent: conversationCore.detectIntent,
+  routeIntent: conversationCore.routeIntent,
+  maybeOfferGrounding: conversationCore.maybeOfferGrounding,
+  offerHighRiskSupport: conversationCore.offerHighRiskSupport,
+  showHotlines: conversationCore.showHotlines,
+  startGrounding: conversationCore.startGrounding,
+  startBreathing: conversationCore.startBreathing,
+  endSession: conversationCore.endSession,
+  getStartOptions: conversationCore.getStartOptions,
+  applyTone: conversationCore.applyTone,
+  promptDirectRiskCheck: conversationCore.promptDirectRiskCheck,
+  reinforceAutonomy: conversationCore.reinforceAutonomy
+};
+
+// Add compatibility with test harness
+window._mfTest = window._mfTest || {};
+window._mfTest.detectIntent = conversationCore.detectIntent;

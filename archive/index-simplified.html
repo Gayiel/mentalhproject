@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Mind Flow — Simplified</title>
+        <style>
+            /* Core styles */
+            :root {
+                --app-bg: #f8fafc;
+                --primary-50: #f0f7ff;
+                --primary-100: #e0f2fe;
+                --primary-500: #0ea5e9;
+                --primary-600: #0284c7;
+                
+                --neutral-50: #f8fafc;
+                --neutral-100: #f1f5f9;
+                --neutral-200: #e2e8f0;
+                --neutral-300: #cbd5e1;
+                --neutral-400: #94a3b8;
+                --neutral-500: #64748b;
+                --neutral-600: #475569;
+                --neutral-700: #334155;
+                --neutral-800: #1e293b;
+                --neutral-900: #0f172a;
+                
+                --bg-primary: var(--neutral-50);
+                --bg-secondary: white;
+                --bg-tertiary: var(--primary-50);
+                
+                --text-primary: var(--neutral-900);
+                --text-secondary: var(--neutral-700);
+                --text-tertiary: var(--neutral-500);
+                
+                --border-light: var(--neutral-200);
+                --border-medium: var(--neutral-300);
+                
+                --accent-blue: var(--primary-500);
+                --accent-blue-hover: var(--primary-600);
+                
+                --chat-user-bg: linear-gradient(135deg, #0c4a6e, #0369a1);
+                --chat-bot-bg: linear-gradient(135deg, #1e293b, #334155);
+            }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+                line-height: 1.5;
+                color: var(--text-primary);
+                background: var(--app-bg);
+                margin: 0;
+                padding: 0;
+            }
+
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+
+            header {
+                text-align: center;
+                margin-bottom: 20px;
+                padding: 20px 0;
+                background-color: var(--bg-secondary);
+                border-bottom: 1px solid var(--border-light);
+            }
+
+            h1 {
+                margin: 0;
+                font-size: 1.8rem;
+            }
+
+            .subtitle {
+                color: var(--text-tertiary);
+                font-size: 0.9rem;
+            }
+
+            .card {
+                background-color: var(--bg-secondary);
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            /* Conversation styling */
+            .messages-container {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                margin: 15px 0;
+                max-height: 400px;
+                overflow-y: auto;
+                padding-right: 8px;
+            }
+
+            .message {
+                padding: 12px 16px;
+                border-radius: 18px;
+                max-width: 80%;
+                color: white;
+                position: relative;
+            }
+
+            .bot-message {
+                align-self: flex-start;
+                background: var(--chat-bot-bg);
+                border-bottom-left-radius: 4px;
+            }
+
+            .user-message {
+                align-self: flex-end;
+                background: var(--chat-user-bg);
+                border-bottom-right-radius: 4px;
+            }
+
+            .input-area {
+                display: flex;
+                gap: 10px;
+                margin-top: 15px;
+            }
+
+            .message-input {
+                flex: 1;
+                padding: 12px;
+                border-radius: 24px;
+                border: 1px solid var(--border-medium);
+                font-size: 16px;
+            }
+
+            .send-button {
+                background: var(--accent-blue);
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 48px;
+                height: 48px;
+                cursor: pointer;
+                font-size: 18px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .send-button:hover {
+                background: var(--accent-blue-hover);
+            }
+
+            .action-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 8px;
+            }
+
+            .action-button {
+                background-color: var(--neutral-100);
+                border: 1px solid var(--border-light);
+                border-radius: 16px;
+                padding: 6px 12px;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .action-button:hover {
+                background-color: var(--primary-100);
+            }
+
+            .starters {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin: 15px 0;
+            }
+
+            .starter-button {
+                background-color: var(--primary-50);
+                border: 1px solid var(--primary-100);
+                border-radius: 16px;
+                padding: 8px 14px;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .starter-button:hover {
+                background-color: var(--primary-100);
+            }
+
+            .thinking-indicator {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                padding: 12px 16px;
+                border-radius: 18px;
+                background: var(--chat-bot-bg);
+                color: white;
+                align-self: flex-start;
+                border-bottom-left-radius: 4px;
+            }
+
+            .thinking-indicator span {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: rgba(255, 255, 255, 0.5);
+                animation: bounce 1.4s infinite both;
+            }
+
+            .thinking-indicator span:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+
+            .thinking-indicator span:nth-child(3) {
+                animation-delay: 0.4s;
+            }
+
+            @keyframes bounce {
+                0%, 80%, 100% {
+                    transform: scale(0);
+                }
+                40% {
+                    transform: scale(1);
+                }
+            }
+
+            footer {
+                text-align: center;
+                color: var(--text-tertiary);
+                font-size: 0.8rem;
+                padding: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Mind Flow</h1>
+            <p class="subtitle">A simple space to reflect and find support</p>
+        </header>
+
+        <div class="container">
+            <div class="card">
+                <div id="mind-flow-container">
+                    <div id="messages" class="messages-container"></div>
+                    
+                    <div id="starters" class="starters">
+                        <!-- Starter buttons will be added by JavaScript -->
+                    </div>
+                    
+                    <div class="input-area">
+                        <input type="text" id="message-input" class="message-input" placeholder="Type your message here..." aria-label="Type your message">
+                        <button id="send-button" class="send-button" aria-label="Send message">→</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Private & confidential. For self-reflection and support.</p>
+        </footer>
+
+        <script src="conversationCore-simplified.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize conversation context
+                const conversationContext = {
+                    messages: [],
+                    lastMessage: null,
+                    lastSuggestion: null,
+                    
+                    // Add message from bot to UI
+                    pushBot: function(text) {
+                        const messagesContainer = document.getElementById('messages');
+                        const messageElem = document.createElement('div');
+                        messageElem.classList.add('message', 'bot-message');
+                        messageElem.textContent = text;
+                        messagesContainer.appendChild(messageElem);
+                        this.messages.push({type: 'bot', text: text});
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    },
+                    
+                    // Add user message to UI
+                    pushUser: function(text) {
+                        const messagesContainer = document.getElementById('messages');
+                        const messageElem = document.createElement('div');
+                        messageElem.classList.add('message', 'user-message');
+                        messageElem.textContent = text;
+                        messagesContainer.appendChild(messageElem);
+                        this.messages.push({type: 'user', text: text});
+                        this.lastMessage = text;
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    },
+                    
+                    // Add action buttons
+                    addActions: function(actions) {
+                        const messagesContainer = document.getElementById('messages');
+                        const actionsContainer = document.createElement('div');
+                        actionsContainer.classList.add('action-buttons');
+                        
+                        actions.forEach(action => {
+                            const button = document.createElement('button');
+                            button.classList.add('action-button');
+                            button.textContent = action.label;
+                            button.addEventListener('click', action.handler);
+                            actionsContainer.appendChild(button);
+                        });
+                        
+                        messagesContainer.appendChild(actionsContainer);
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    },
+                    
+                    // Clear action buttons
+                    clearActions: function() {
+                        const actionButtons = document.querySelectorAll('.action-buttons');
+                        actionButtons.forEach(element => {
+                            element.remove();
+                        });
+                    },
+                    
+                    // Set last suggestion
+                    setLastSuggestion: function(suggestion) {
+                        this.lastSuggestion = suggestion;
+                    },
+                    
+                    // Reset conversation
+                    resetConversation: function() {
+                        const messagesContainer = document.getElementById('messages');
+                        messagesContainer.innerHTML = '';
+                        this.messages = [];
+                        this.lastMessage = null;
+                        this.lastSuggestion = null;
+                    }
+                };
+
+                // Start the conversation with a greeting
+                conversationContext.pushBot("Hi there! I'm your Mind Flow assistant. How are you feeling today?");
+
+                // Add starter buttons
+                const startOptions = window.conversationCore.getStartOptions();
+                const startersContainer = document.getElementById('starters');
+                
+                startOptions.slice(0, 5).forEach(option => {
+                    const button = document.createElement('button');
+                    button.classList.add('starter-button');
+                    button.textContent = option;
+                    button.addEventListener('click', function() {
+                        // Send the starter message as if the user typed it
+                        handleMessage(option);
+                        // Hide starters after selection
+                        startersContainer.style.display = 'none';
+                    });
+                    startersContainer.appendChild(button);
+                });
+
+                // Handle sending a message
+                function handleMessage(text) {
+                    if (!text.trim()) return;
+                    
+                    // Show user message
+                    conversationContext.pushUser(text);
+                    
+                    // Show thinking indicator
+                    showThinkingIndicator(true);
+
+                    // Clear the input field if this was from the input (not starters)
+                    const inputField = document.getElementById('message-input');
+                    if (inputField.value === text) {
+                        inputField.value = '';
+                    }
+                    
+                    // Process the message with conversationCore
+                    setTimeout(() => {
+                        showThinkingIndicator(false);
+                        window.conversationCore.routeIntent(conversationContext);
+                    }, 1200); // Simulate a short delay for a more natural feel
+                }
+
+                // Show or hide the thinking indicator
+                function showThinkingIndicator(show) {
+                    const messagesContainer = document.getElementById('messages');
+                    let indicator = document.querySelector('.thinking-indicator');
+
+                    if (show) {
+                        if (!indicator) {
+                            indicator = document.createElement('div');
+                            indicator.classList.add('thinking-indicator');
+                            indicator.innerHTML = '<span></span><span></span><span></span>';
+                            messagesContainer.appendChild(indicator);
+                            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                        }
+                    } else {
+                        if (indicator) {
+                            indicator.remove();
+                        }
+                    }
+                }
+
+                // Setup event listeners
+                document.getElementById('send-button').addEventListener('click', function() {
+                    const inputField = document.getElementById('message-input');
+                    handleMessage(inputField.value);
+                });
+
+                document.getElementById('message-input').addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        handleMessage(this.value);
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

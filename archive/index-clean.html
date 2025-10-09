@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mind Flow - Mental Health Support</title>
+    <style>
+        /* Simple, clean design system */
+        :root {
+            --primary: #0ea5e9;
+            --primary-light: #e0f2fe;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-500: #64748b;
+            --gray-700: #334155;
+            --gray-900: #0f172a;
+            
+            --bg: var(--gray-50);
+            --card-bg: white;
+            --text: var(--gray-900);
+            --text-light: var(--gray-700);
+            --text-muted: var(--gray-500);
+            --border: var(--gray-200);
+            
+            --user-bg: linear-gradient(135deg, #0c4a6e, #0369a1);
+            --bot-bg: linear-gradient(135deg, #1e293b, #334155);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--text);
+        }
+
+        .header p {
+            margin: 8px 0 0 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Chat Interface */
+        .chat-container {
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            color: white;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--user-bg);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background: var(--bot-bg);
+            border-bottom-left-radius: 4px;
+        }
+
+        .typing {
+            align-self: flex-start;
+            background: var(--gray-100);
+            color: var(--text-muted);
+            padding: 12px 16px;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            animation: bounce 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .input-area {
+            display: flex;
+            gap: 12px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            font-size: 16px;
+            resize: none;
+            font-family: inherit;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .send-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .send-btn:hover {
+            background: #1e40af;
+        }
+
+        .send-btn:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .action-btn {
+            background: var(--gray-100);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        .crisis-alert {
+            background: var(--danger);
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .starters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .starter-btn {
+            background: var(--primary-light);
+            border: 1px solid var(--primary);
+            border-radius: 20px;
+            padding: 10px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .starter-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 640px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+            
+            .chat-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Mind Flow</h1>
+            <p>A safe space for mental health support and reflection</p>
+        </div>
+
+        <div class="card">
+            <div id="crisis-alert" class="crisis-alert hidden">
+                ⚠️ Crisis detected - Please consider reaching out for immediate support
+            </div>
+
+            <div class="chat-container">
+                <div id="messages" class="messages"></div>
+                
+                <div id="starters" class="starters">
+                    <!-- Starter buttons will be added by JavaScript -->
+                </div>
+                
+                <div class="input-area">
+                    <textarea 
+                        id="message-input" 
+                        class="input-field" 
+                        placeholder="Share what's on your mind..."
+                        rows="1"
+                    ></textarea>
+                    <button id="send-btn" class="send-btn">→</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>This is a supportive tool, not professional therapy. If you're in crisis, contact emergency services or a crisis hotline.</p>
+        </div>
+    </div>
+
+    <script src="support-core-clean.js"></script>
+    <script>
+        class MindFlowChat {
+            constructor() {
+                this.messages = [];
+                this.isTyping = false;
+                this.crisisDetected = false;
+                this.supportSystem = new MentalHealthSupport();
+                
+                this.setupElements();
+                this.setupEventListeners();
+                this.setupTextareaResize();
+                this.addStarterButtons();
+                this.showWelcomeMessage();
+            }
+
+            setupElements() {
+                this.messagesContainer = document.getElementById('messages');
+                this.messageInput = document.getElementById('message-input');
+                this.sendBtn = document.getElementById('send-btn');
+                this.startersContainer = document.getElementById('starters');
+                this.crisisAlert = document.getElementById('crisis-alert');
+            }
+
+            setupEventListeners() {
+                this.sendBtn.addEventListener('click', () => this.sendMessage());
+                
+                this.messageInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                this.messageInput.addEventListener('input', () => {
+                    this.updateSendButton();
+                });
+            }
+
+            setupTextareaResize() {
+                this.messageInput.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+                });
+            }
+
+            updateSendButton() {
+                this.sendBtn.disabled = !this.messageInput.value.trim();
+            }
+
+            addStarterButtons() {
+                const starters = [
+                    "I've been feeling anxious lately",
+                    "I'm having trouble sleeping",
+                    "I feel overwhelmed",
+                    "I'm struggling with motivation",
+                    "I feel lonely"
+                ];
+
+                starters.forEach(text => {
+                    const btn = document.createElement('button');
+                    btn.classList.add('starter-btn');
+                    btn.textContent = text;
+                    btn.addEventListener('click', () => {
+                        this.sendMessage(text);
+                        this.startersContainer.style.display = 'none';
+                    });
+                    this.startersContainer.appendChild(btn);
+                });
+            }
+
+            showWelcomeMessage() {
+                setTimeout(() => {
+                    this.addBotMessage("Hello! I'm here to listen and provide support. You can choose a starter phrase above or share whatever is on your mind.");
+                }, 500);
+            }
+
+            sendMessage(text = null) {
+                const message = text || this.messageInput.value.trim();
+                if (!message) return;
+
+                // Add user message
+                this.addUserMessage(message);
+                
+                // Clear input
+                if (!text) {
+                    this.messageInput.value = '';
+                    this.messageInput.style.height = 'auto';
+                    this.updateSendButton();
+                }
+
+                // Show typing indicator and process response
+                this.showTyping();
+                setTimeout(() => {
+                    this.hideTyping();
+                    this.processMessage(message);
+                }, 1000 + Math.random() * 1000);
+            }
+
+            addUserMessage(text) {
+                const messageElem = document.createElement('div');
+                messageElem.classList.add('message', 'user');
+                messageElem.textContent = text;
+                this.messagesContainer.appendChild(messageElem);
+                this.scrollToBottom();
+                
+                this.messages.push({ type: 'user', text, timestamp: new Date() });
+            }
+
+            addBotMessage(text) {
+                const messageElem = document.createElement('div');
+                messageElem.classList.add('message', 'bot');
+                messageElem.textContent = text;
+                this.messagesContainer.appendChild(messageElem);
+                this.scrollToBottom();
+                
+                this.messages.push({ type: 'bot', text, timestamp: new Date() });
+            }
+
+            showTyping() {
+                if (this.isTyping) return;
+                
+                const typingElem = document.createElement('div');
+                typingElem.classList.add('typing');
+                typingElem.id = 'typing-indicator';
+                typingElem.innerHTML = `
+                    Thinking...
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                `;
+                
+                this.messagesContainer.appendChild(typingElem);
+                this.isTyping = true;
+                this.scrollToBottom();
+            }
+
+            hideTyping() {
+                const typingElem = document.getElementById('typing-indicator');
+                if (typingElem) {
+                    typingElem.remove();
+                    this.isTyping = false;
+                }
+            }
+
+            processMessage(message) {
+                // Check for crisis first
+                if (this.supportSystem.isCrisis(message)) {
+                    this.showCrisisAlert();
+                    const crisisResponse = this.supportSystem.getCrisisResponse();
+                    this.addBotMessage(crisisResponse.message);
+                    this.addBotMessage("Here are immediate resources:");
+                    crisisResponse.resources.forEach(resource => {
+                        this.addBotMessage(resource);
+                    });
+                    this.addBotMessage(crisisResponse.followUp);
+                    return;
+                }
+
+                // Normal response flow
+                const topic = this.supportSystem.detectTopic(message);
+                const response = this.supportSystem.getResponse(topic, message);
+                
+                this.addBotMessage(response);
+                this.addActionButtons(topic);
+            }
+
+
+
+            addActionButtons(topic) {
+                const suggestions = this.supportSystem.getSuggestions(topic);
+                if (!suggestions.length) return;
+
+                const actionsContainer = document.createElement('div');
+                actionsContainer.classList.add('actions');
+
+                suggestions.forEach(suggestion => {
+                    const btn = document.createElement('button');
+                    btn.classList.add('action-btn');
+                    btn.textContent = suggestion.label;
+                    btn.addEventListener('click', () => {
+                        this.addBotMessage(suggestion.response);
+                        actionsContainer.remove();
+                    });
+                    actionsContainer.appendChild(btn);
+                });
+
+                this.messagesContainer.appendChild(actionsContainer);
+                this.scrollToBottom();
+            }
+
+            showCrisisAlert() {
+                this.crisisAlert.classList.remove('hidden');
+                this.crisisDetected = true;
+            }
+
+            scrollToBottom() {
+                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+            }
+        }
+
+        // Initialize the chat when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new MindFlowChat();
+        });
+    </script>
+</body>
+</html>

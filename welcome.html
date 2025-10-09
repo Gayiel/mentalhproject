@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mind Flow - Mental Health Sanctuary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .welcome-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        .tagline {
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .feature h3 {
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .feature p {
+            font-size: 0.9em;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .enter-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .enter-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .disclaimer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            opacity: 0.7;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .welcome-container {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 2.5em;
+            }
+            
+            .tagline {
+                font-size: 1.1em;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <h1>🌸 Mind Flow Sanctuary</h1>
+        <p class="tagline">
+            Your safe, confidential space for mental wellness and emotional support.
+            <br>Human professionals are here to help you through every step.
+        </p>
+        
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">🛡️</span>
+                <h3>Safe & Private</h3>
+                <p>HIPAA compliant with end-to-end encryption</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🤝</span>
+                <h3>Human Support</h3>
+                <p>Licensed counselors review all conversations</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🆘</span>
+                <h3>Crisis Ready</h3>
+                <p>24/7 emergency resources and immediate help</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">💙</span>
+                <h3>Judgment-Free</h3>
+                <p>A warm, welcoming space to express yourself</p>
+            </div>
+        </div>
+        
+        <a href="sanctuary.html" class="enter-btn">🌱 Enter Your Sanctuary</a>
+        
+        <div class="disclaimer">
+            <p>
+                <strong>🚨 Emergency:</strong> If you're in immediate danger, please call 911 or 988 (Suicide & Crisis Lifeline)
+                <br><br>
+                This sanctuary provides supportive conversations and connects you with professional resources. 
+                It's not a replacement for emergency services or professional therapy.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
