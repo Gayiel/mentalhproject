@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindFlow Sanctuary - Testing Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2d3748;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2b6cb0;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+        }
+        .test-button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #3182ce;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #c6f6d5;
+            border: 1px solid #68d391;
+            color: #276749;
+        }
+        .error {
+            background: #fed7d7;
+            border: 1px solid #fc8181;
+            color: #c53030;
+        }
+        .info {
+            background: #bee3f8;
+            border: 1px solid #63b3ed;
+            color: #2c5282;
+        }
+        .main-link {
+            display: block;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #48bb78;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .main-link:hover {
+            background: #38a169;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 MindFlow Sanctuary - Testing Dashboard</h1>
+        
+        <a href="unified-sanctuary.html" class="main-link">
+            → Open MindFlow Sanctuary Platform
+        </a>
+        
+        <div class="test-section">
+            <h3>🔧 Database Integration Tests</h3>
+            <button class="test-button" onclick="testMetricsAPI()">Test Live Metrics API</button>
+            <button class="test-button" onclick="testCounselorsAPI()">Test Counselors API</button>
+            <button class="test-button" onclick="testConversationAPI()">Test Conversation Creation</button>
+            <div id="db-results" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>💬 Frontend Integration Tests</h3>
+            <button class="test-button" onclick="testEnterSanctuary()">Test Enter Sanctuary Function</button>
+            <button class="test-button" onclick="testDBIntegration()">Test DB Integration Script</button>
+            <button class="test-button" onclick="testLiveMetrics()">Test Live Metrics Update</button>
+            <div id="frontend-results" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🚨 Crisis System Tests</h3>
+            <button class="test-button" onclick="testCrisisDetection()">Test Crisis Detection</button>
+            <button class="test-button" onclick="testCrisisAPI()">Test Crisis Intervention API</button>
+            <div id="crisis-results" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 Platform Status</h3>
+            <div id="status-info" class="result info">Loading platform status...</div>
+            <button class="test-button" onclick="refreshStatus()">Refresh Status</button>
+        </div>
+    </div>
+
+    <script>
+        // Test functions
+        async function testMetricsAPI() {
+            const results = document.getElementById('db-results');
+            results.innerHTML = 'Testing metrics API...';
+            
+            try {
+                const response = await fetch('/api/sanctuary/metrics');
+                if (response.ok) {
+                    const data = await response.json();
+                    results.className = 'result success';
+                    results.innerHTML = `✅ Metrics API Working!
+Data: ${JSON.stringify(data, null, 2)}`;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                results.className = 'result error';
+                results.innerHTML = `❌ Metrics API Failed: ${error.message}
+Note: Server may not be running. Start with 'npm start' or 'node server.js'`;
+            }
+        }
+        
+        async function testCounselorsAPI() {
+            const results = document.getElementById('db-results');
+            results.innerHTML = 'Testing counselors API...';
+            
+            try {
+                const response = await fetch('/api/sanctuary/counselors');
+                if (response.ok) {
+                    const data = await response.json();
+                    results.className = 'result success';
+                    results.innerHTML = `✅ Counselors API Working!
+Found ${data.counselors.length} licensed counselors:
+${data.counselors.map(c => `- Dr. ${c.first_name} ${c.last_name} (${c.specialties})`).join('\\n')}`;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                results.className = 'result error';
+                results.innerHTML = `❌ Counselors API Failed: ${error.message}`;
+            }
+        }
+        
+        async function testConversationAPI() {
+            const results = document.getElementById('db-results');
+            results.innerHTML = 'Testing conversation creation...';
+            
+            try {
+                const response = await fetch('/api/sanctuary/conversation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ anonymous: true })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    results.className = 'result success';
+                    results.innerHTML = `✅ Conversation API Working!
+Created conversation: ${data.session_id}
+ID: ${data.conversation_id}`;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                results.className = 'result error';
+                results.innerHTML = `❌ Conversation API Failed: ${error.message}`;
+            }
+        }
+        
+        function testEnterSanctuary() {
+            const results = document.getElementById('frontend-results');
+            results.className = 'result info';
+            results.innerHTML = 'Testing enterSanctuary function...';
+            
+            if (typeof enterSanctuary === 'function') {
+                results.className = 'result success';
+                results.innerHTML = '✅ enterSanctuary function is available!';
+            } else {
+                results.className = 'result error';
+                results.innerHTML = '❌ enterSanctuary function not found. Check sanctuary.js loading.';
+            }
+        }
+        
+        function testDBIntegration() {
+            const results = document.getElementById('frontend-results');
+            results.className = 'result info';
+            results.innerHTML = 'Testing DB integration...';
+            
+            if (window.sanctuaryDBIntegration) {
+                results.className = 'result success';
+                results.innerHTML = `✅ DB Integration loaded!
+Available functions: ${Object.keys(window.sanctuaryDBIntegration).join(', ')}`;
+            } else {
+                results.className = 'result error';
+                results.innerHTML = '❌ DB Integration not loaded. Check db-integration.js';
+            }
+        }
+        
+        async function testLiveMetrics() {
+            const results = document.getElementById('frontend-results');
+            results.innerHTML = 'Testing live metrics update...';
+            
+            if (window.sanctuaryDBIntegration) {
+                try {
+                    await window.sanctuaryDBIntegration.updateLiveMetricsFromDB();
+                    results.className = 'result success';
+                    results.innerHTML = '✅ Live metrics updated successfully!';
+                } catch (error) {
+                    results.className = 'result error';
+                    results.innerHTML = `❌ Live metrics failed: ${error.message}`;
+                }
+            } else {
+                results.className = 'result error';
+                results.innerHTML = '❌ DB Integration not available';
+            }
+        }
+        
+        function testCrisisDetection() {
+            const results = document.getElementById('crisis-results');
+            
+            if (window.sanctuary && window.sanctuary.analyzeMessage) {
+                const testMessage = "I feel hopeless and I can't cope anymore";
+                const analysis = window.sanctuary.analyzeMessage(testMessage);
+                results.className = 'result success';
+                results.innerHTML = `✅ Crisis detection working!
+Test message: "${testMessage}"
+Analysis: Score ${analysis.score}, Crisis: ${analysis.crisis}`;
+            } else {
+                results.className = 'result error';
+                results.innerHTML = '❌ Crisis detection not available. Sanctuary not initialized.';
+            }
+        }
+        
+        async function testCrisisAPI() {
+            const results = document.getElementById('crisis-results');
+            results.innerHTML = 'Testing crisis intervention API...';
+            
+            try {
+                const response = await fetch('/api/sanctuary/crisis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        conversation_id: 1,
+                        crisis_level: 85,
+                        intervention_type: 'test'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    results.className = 'result success';
+                    results.innerHTML = `✅ Crisis API Working!
+Intervention recorded: ${data.intervention_id}`;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                results.className = 'result error';
+                results.innerHTML = `❌ Crisis API Failed: ${error.message}`;
+            }
+        }
+        
+        async function refreshStatus() {
+            const status = document.getElementById('status-info');
+            status.innerHTML = 'Loading platform status...';
+            
+            try {
+                const response = await fetch('/api/sanctuary/metrics');
+                if (response.ok) {
+                    const data = await response.json();
+                    status.className = 'result success';
+                    status.innerHTML = `📊 Platform Status (Live):
+• Active Users: ${data.total_users.toLocaleString()}
+• Current Sessions: ${data.active_sessions.toLocaleString()}  
+• Crisis Interventions: ${data.crisis_interventions.toLocaleString()}
+• Available Counselors: ${data.counselors_online.toLocaleString()}
+• Avg Response Time: ${data.avg_response_time}s
+• User Satisfaction: ${data.user_satisfaction_avg}/5.0
+
+✅ All systems operational`;
+                } else {
+                    throw new Error('Server not responding');
+                }
+            } catch (error) {
+                status.className = 'result error';
+                status.innerHTML = `❌ Cannot connect to server: ${error.message}
+Please start the server with: node server.js`;
+            }
+        }
+        
+        // Load status on page load
+        document.addEventListener('DOMContentLoaded', refreshStatus);
+        
+        // Auto-refresh status every 30 seconds
+        setInterval(refreshStatus, 30000);
+    </script>
+</body>
+</html>

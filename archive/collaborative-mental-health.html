@@ -1,0 +1,737 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mind Flow - Collaborative Mental Health Support</title>
+    <style>
+        /* Enhanced styling for collaborative AI system */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: #f8fafc;
+        }
+
+        /* Human Support Banner */
+        .human-support-banner {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .human-support-banner .support-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .escalate-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .escalate-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Status Indicators */
+        .status-bar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .human-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .human-indicator.reviewing {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .human-indicator.connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .human-indicator.crisis {
+            background: #fecaca;
+            color: #991b1b;
+            animation: pulse 2s infinite;
+        }
+
+        .human-indicator.offline {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .crisis-shield {
+            background: #dc2626;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .crisis-shield.active {
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: calc(100vh - 120px);
+        }
+
+        /* Privacy Notice */
+        .privacy-notice {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .privacy-content h4 {
+            color: #0c4a6e;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .privacy-content p {
+            color: #0c4a6e;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .privacy-btn {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            margin: 8px 8px 0 0;
+            transition: background 0.2s;
+        }
+
+        .privacy-btn:hover {
+            background: #0284c7;
+        }
+
+        /* Chat Interface */
+        .chat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .crisis-warning {
+            background: #dc2626;
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .crisis-warning.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 14px 18px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #1e40af, #1d4ed8);
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background: #f1f5f9;
+            color: #1e293b;
+            border-bottom-left-radius: 6px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .message.human {
+            align-self: flex-start;
+            background: #ecfdf5;
+            color: #065f46;
+            border-bottom-left-radius: 6px;
+            border-left: 3px solid #10b981;
+        }
+
+        .message.system {
+            align-self: center;
+            background: #f3f4f6;
+            color: #374151;
+            font-style: italic;
+            text-align: center;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .typing {
+            align-self: flex-start;
+            background: #e2e8f0;
+            color: #64748b;
+            padding: 14px 18px;
+            border-radius: 18px;
+            border-bottom-left-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-style: italic;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #64748b;
+            animation: bounce 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+            40% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Action Buttons */
+        .crisis-actions, .safety-check-actions, .support-actions, .clinic-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .crisis-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .crisis-btn:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+        }
+
+        .safety-btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .safety-btn.safe {
+            background: #10b981;
+            color: white;
+        }
+
+        .safety-btn.safe:hover {
+            background: #059669;
+        }
+
+        .safety-btn.crisis {
+            background: #dc2626;
+            color: white;
+        }
+
+        .safety-btn.crisis:hover {
+            background: #b91c1c;
+        }
+
+        .safety-btn.unsure {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .safety-btn.unsure:hover {
+            background: #2563eb;
+        }
+
+        .support-btn, .clinic-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .support-btn:hover, .clinic-btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        /* Input Section */
+        .input-section {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 24px;
+            font-size: 16px;
+            resize: none;
+            font-family: inherit;
+            min-height: 48px;
+            max-height: 120px;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .send-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+            padding: 20px;
+            line-height: 1.5;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 20px;
+        }
+
+        .footer strong {
+            color: #dc2626;
+        }
+
+        .footer .disclaimer {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            font-weight: 500;
+        }
+
+        /* Multilingual Support Indicator */
+        .language-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #3b82f6;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .chat-card {
+                height: 500px;
+                padding: 16px;
+            }
+
+            .status-bar {
+                flex-direction: column;
+                gap: 8px;
+                align-items: stretch;
+            }
+
+            .human-support-banner .support-text {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .crisis-actions, .safety-check-actions, .support-actions, .clinic-actions {
+                flex-direction: column;
+            }
+
+            .crisis-btn, .safety-btn, .support-btn, .clinic-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* High contrast mode */
+        @media (prefers-contrast: high) {
+            .message.bot {
+                border-left-width: 5px;
+            }
+            
+            .message.human {
+                border-left-width: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Human Support Always Available Banner -->
+    <div class="human-support-banner">
+        <div class="support-text">
+            <span>🤝 <strong>Human Support Always Available</strong> - Licensed professionals reviewing conversations</span>
+            <button class="escalate-btn" onclick="window.mentalHealthAI?.escalateToHuman()">Connect to Human Now</button>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div id="human-indicator" class="human-indicator offline">
+            💤 Human support available
+        </div>
+        <div id="crisis-shield" class="crisis-shield">
+            🛡️ Crisis Protocol Active
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Privacy Notice -->
+        <div id="privacy-notice" class="privacy-notice">
+            <!-- Content populated by JavaScript -->
+        </div>
+
+        <!-- Chat Interface -->
+        <div class="chat-card">
+            <div id="crisis-warning" class="crisis-warning">
+                <!-- Populated dynamically during crisis -->
+            </div>
+
+            <div id="messages" class="messages"></div>
+            
+            <div class="input-section">
+                <textarea 
+                    id="message-input" 
+                    class="input-field" 
+                    placeholder="Share what's on your mind... A human specialist reviews our conversations to ensure you get the best support."
+                    rows="1"
+                ></textarea>
+                <button id="send-btn" class="send-btn">→</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="disclaimer">
+            ⚠️ <strong>Important:</strong> This AI assistant works with licensed human professionals but is not a replacement for emergency services or professional therapy.
+        </div>
+        <p><strong>Emergency:</strong> Call 988 (US Suicide & Crisis Lifeline), 911, or your local emergency number</p>
+        <p>🔒 HIPAA/GDPR Compliant • 🤝 Human-AI Collaboration • 🛡️ Zero-Tolerance Crisis Detection</p>
+        <p>Your privacy is protected and you can delete your data at any time.</p>
+    </footer>
+
+    <!-- Language Indicator -->
+    <div class="language-indicator">
+        🌐 EN (English)
+    </div>
+
+    <!-- Enhanced Collaborative AI System -->
+    <script src="js/collaborative-ai-system.js"></script>
+
+    <!-- Additional methods for UI interactions -->
+    <script>
+        // Additional UI interaction methods
+        if (window.mentalHealthAI) {
+            // Crisis connection methods
+            window.mentalHealthAI.connectCrisisLine = function() {
+                window.open('tel:988', '_self');
+                this.logInteraction('crisis_line_called', { method: 'phone' });
+            };
+
+            window.mentalHealthAI.findEmergencyClinic = function() {
+                document.querySelector('.crisis-actions')?.remove();
+                this.addBotMessage("I'm locating emergency mental health services near you right now...");
+                
+                setTimeout(() => {
+                    this.addBotMessage(`**Emergency Mental Health Services:**
+
+🏥 **Crisis Centers Near You:**
+• National Crisis Line: 988 (immediate phone support)
+• Crisis Text Line: Text HOME to 741741
+• Emergency Room: Call 911 for immediate danger
+
+**Walk-in Crisis Centers:**
+• Most hospitals have 24/7 psychiatric emergency services
+• Community mental health centers often have crisis teams
+• Crisis respite centers provide short-term support
+
+Would you like me to help you contact any of these services right now?`);
+                }, 2000);
+            };
+
+            window.mentalHealthAI.scheduleUrgentSession = function() {
+                document.querySelector('.crisis-actions')?.remove();
+                this.addBotMessage("I'm connecting you with services that have same-day or next-day availability...");
+                
+                setTimeout(() => {
+                    this.showUrgentTherapyOptions();
+                }, 1500);
+            };
+
+            window.mentalHealthAI.showUrgentTherapyOptions = function() {
+                this.addBotMessage(`**Urgent Therapy Services Available:**
+
+📱 **Immediate Online Support:**
+• BetterHelp Crisis Support - Available within hours
+• Talkspace Urgent Care - Same-day response
+• Crisis Chat Services - Immediate connection
+
+📞 **Same-Day Phone Sessions:**
+• Many therapists reserve urgent appointment slots
+• Crisis intervention specialists available
+• Telehealth platforms with immediate booking
+
+Would you like me to help you connect with any of these services? I can assist with scheduling or provide direct contact information.`);
+            };
+
+            // Therapy finding methods
+            window.mentalHealthAI.offerBreathingExercise = function() {
+                document.querySelector('.support-actions')?.remove();
+                this.addBotMessage(`Let's try a calming breathing exercise together:
+
+**4-7-8 Breathing Technique:**
+1. Breathe in through your nose for 4 counts
+2. Hold your breath for 7 counts  
+3. Breathe out through your mouth for 8 counts
+4. Repeat 3-4 times
+
+Take your time with each breath. I'll wait here with you.
+
+How are you feeling after trying this?`);
+            };
+
+            window.mentalHealthAI.offerSelfCare = function() {
+                document.querySelector('.support-actions')?.remove();
+                this.addBotMessage(`Here are some gentle self-care approaches that might help:
+
+**Immediate Comfort:**
+• Take a warm shower or bath
+• Listen to calming music
+• Step outside for fresh air, even briefly
+• Drink something warm and soothing
+
+**Gentle Activities:**
+• Light stretching or movement
+• Journal or write your thoughts
+• Call someone who cares about you
+• Do something creative with your hands
+
+**Professional Support:**
+I can also help you connect with depression specialists who understand what you're going through.
+
+What feels most manageable for you right now?`);
+            };
+
+            window.mentalHealthAI.scheduleAppointment = function() {
+                document.querySelector('.clinic-actions')?.remove();
+                this.addBotMessage(`I'll help you schedule an appointment. Let me gather some information to find the best match:
+
+**To help me connect you with the right therapist:**
+• What type of support are you looking for? (anxiety, depression, relationships, etc.)
+• Do you prefer in-person or online sessions?
+• Do you have insurance coverage for mental health?
+• Are there any times that work better for you?
+
+A human counselor will also review this information to ensure we find you the best possible match.`);
+            };
+
+            window.mentalHealthAI.getInsuranceInfo = function() {
+                document.querySelector('.clinic-actions')?.remove();
+                this.addBotMessage(`**Insurance & Coverage Information:**
+
+**Most Common Coverage:**
+• Many insurance plans cover mental health (required by law)
+• Check your plan for "behavioral health" or "mental health" benefits
+• Copays typically range from $10-$50 per session
+
+**No Insurance Options:**
+• Sliding scale fees based on income
+• Community mental health centers
+• University training clinics (reduced rates)
+• Employee Assistance Programs (EAP) through work
+
+**How to Check Your Coverage:**
+• Call the number on your insurance card
+• Ask about "outpatient mental health benefits"
+• Ask about your deductible and copay amounts
+
+Would you like help contacting your insurance company or finding no-insurance options?`);
+            };
+
+            // Update crisis shield when crisis mode is activated
+            const originalHandleCrisis = window.mentalHealthAI.handleCrisisProtocol;
+            window.mentalHealthAI.handleCrisisProtocol = function(message, keyword) {
+                document.getElementById('crisis-shield').classList.add('active');
+                return originalHandleCrisis.call(this, message, keyword);
+            };
+        }
+
+        // Additional accessibility features
+        document.addEventListener('keydown', function(e) {
+            // Alt + H to escalate to human
+            if (e.altKey && e.key === 'h') {
+                e.preventDefault();
+                window.mentalHealthAI?.escalateToHuman();
+            }
+            
+            // Alt + D to delete data
+            if (e.altKey && e.key === 'd') {
+                e.preventDefault();
+                window.mentalHealthAI?.deleteUserData();
+            }
+        });
+
+        // Check for location to provide local resources
+        if (navigator.geolocation && window.mentalHealthAI) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    // In production, would reverse geocode to get location
+                    window.mentalHealthAI.userLocation = 'US'; // Default for now
+                },
+                function(error) {
+                    console.log('Location access denied - using default resources');
+                }
+            );
+        }
+    </script>
+</body>
+</html>

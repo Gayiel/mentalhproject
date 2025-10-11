@@ -1,19 +1,32 @@
 {
-  "name": "mentalhproject",
-  "version": "0.1.0",
+  "name": "mindflow-sanctuary",
+  "version": "1.0.0",
   "private": true,
-  "description": "Mind Flow Tumblr-like mood tracking app with basic auth backend",
+  "description": "MindFlow Sanctuary - Professional Mental Health AI Platform with Licensed Counselor Oversight",
   "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "init-db": "node -e \"console.log('Database will be initialized on first server start')\"",
+    "test": "echo \"No tests specified\" && exit 1"
   },
+  "keywords": [
+    "mental-health",
+    "ai",
+    "counseling",
+    "crisis-support",
+    "healthcare"
+  ],
+  "author": "MindFlow Sanctuary Team",
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^9.4.3",
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "sql.js": "^1.13.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
