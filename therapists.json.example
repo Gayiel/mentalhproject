@@ -1,0 +1,20 @@
+[
+  {
+    "id": "example-1",
+    "name": "Dr. Example Smith",
+    "license": "LCSW-XXXXX",
+    "specialties": ["Anxiety", "Depression", "Trauma"],
+    "location": "Example City, ST",
+    "availability": "Available",
+    "contact": "example@example.com",
+    "credentials": "Licensed Clinical Social Worker",
+    "experience": "10+ years",
+    "approach": ["Cognitive Behavioral Therapy", "Mindfulness"],
+    "languages": ["English"],
+    "insurance": ["Most major insurance accepted"],
+    "telehealth": true,
+    "emergency": false,
+    "rating": 4.8,
+    "note": "This is an example entry. Replace with actual licensed professionals."
+  }
+]

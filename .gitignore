@@ -3,14 +3,82 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
 
-# Database files
+# Mental Health Data - SENSITIVE - DO NOT COMMIT
 *.db
 *.db-shm
 *.db-wal
+*.sqlite
+*.sqlite3
+mindflow_sanctuary.db
+app.db*
+user_data/
+conversations/
+crisis_logs/
+therapist_data/
+patient_records/
+session_data/
+
+# Configuration & Environment - SENSITIVE
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+config.json
+config.local.json
+database.config.js
+server.config.js
+api.config.js
+
+# Authentication & Security - SENSITIVE
+*.key
+*.pem
+*.p12
+*.crt
+*.cert
+certificates/
+keys/
+auth/
+tokens/
+jwt/
+oauth/
+credentials/
+secrets/
+
+# Therapist & Professional Data - HIPAA SENSITIVE
+therapists.json
+counselors.json
+professional_directory/
+staff_data/
+licenses/
+certifications/
+
+# User Generated Content - POTENTIALLY SENSITIVE
+uploads/
+user_uploads/
+attachments/
+documents/
+media/
+images/user_*
+audio/sessions/
+recordings/
+
+# Logs - MAY CONTAIN SENSITIVE INFO
+logs/
+*.log
+access.log
+error.log
+session.log
+crisis.log
+audit.log
+security.log
+hipaa.log
 
 # IDE and editor files
-.vscode/
+.vscode/settings.json
+.vscode/launch.json
 .idea/
 *.swp
 *.swo
@@ -25,26 +93,65 @@ yarn-error.log*
 ehthumbs.db
 Thumbs.db
 
-# Logs
-logs
-*.log
-
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
 
 # Coverage directory used by tools like istanbul
 coverage/
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.nyc_output/
 
 # Build outputs
 dist/
 build/
+public/build/
+static/build/
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.cache/
+
+# Backup files
+*.backup
+*.bak
+*.old
+backup/
+backups/
+
+# Test data - MAY CONTAIN MOCK SENSITIVE DATA
+test_data/
+mock_data/
+fixtures/
+sample_conversations/
+
+# Analytics & Tracking - PRIVACY SENSITIVE
+analytics/
+tracking/
+metrics/
+usage_data/
+behavioral_data/
+
+# Medical & Health Records - HIPAA CRITICAL
+medical/
+health_records/
+diagnoses/
+treatment_plans/
+prescriptions/
+insurance/
+
+# Legal & Compliance
+legal/
+compliance/
+audit_trails/
+violation_reports/
+incident_reports/
+
+# Development secrets
+.secrets
+local.properties
+development.config
+staging.config
