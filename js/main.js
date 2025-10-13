@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  console.log('MindFlow main.js loaded successfully');
+  // MindFlow main.js loaded successfully
 });
 
 // Export functions for external use

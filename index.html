@@ -60,7 +60,6 @@
         <span class="btn-status" id="btn-status" aria-live="polite"></span>
       </button>
       <a class="btn secondary" href="resources.html">Browse Resources</a>
-      <a class="btn muted" href="test-dashboard.html">API & Developer Dashboard</a>
     </div>
     <div class="note" id="server-note">Checking server status…</div>
     <div class="emergency">
@@ -158,14 +157,8 @@
   <script src="js/main.js"></script>
   
   <script>
-    // Comprehensive Enter Sanctuary button handler
-    let buttonAttempts = 0;
+    // Enter Sanctuary button handler
     let isProcessing = false;
-    
-    function debugLog(message, data = null) {
-      const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
-      console.log(`[${timestamp}] EnterSanctuary: ${message}`, data || '');
-    }
     
     function updateButtonStatus(message, type = 'info') {
       const statusEl = document.getElementById('btn-status');
@@ -186,8 +179,6 @@
           `;
         }
       }
-      
-      debugLog(`Button status: ${message} (${type})`);
     }
     
     function resetButton() {
@@ -205,15 +196,11 @@
     }
     
     async function handleEnterSanctuary(event) {
-      debugLog('Button clicked', { event: event.type, attempts: buttonAttempts });
-      
       if (isProcessing) {
-        debugLog('Already processing, ignoring click');
         return;
       }
       
       isProcessing = true;
-      buttonAttempts++;
       
       const button = document.getElementById('enter-sanctuary-btn');
       if (button) {
@@ -223,21 +210,17 @@
       updateButtonStatus('Preparing...', 'loading');
       
       try {
-        // Method 1: Try direct function call
-        debugLog('Attempting Method 1: Direct function call');
+        // Try direct function call
         if (typeof window.enterNow === 'function') {
-          debugLog('Found window.enterNow, calling...');
           updateButtonStatus('Loading sanctuary...', 'loading');
-          await new Promise(resolve => setTimeout(resolve, 500)); // Visual feedback
+          await new Promise(resolve => setTimeout(resolve, 500));
           window.enterNow();
           updateButtonStatus('Success!', 'success');
           return;
         }
         
-        // Method 2: Try enterSanctuaryWithDB
-        debugLog('Attempting Method 2: enterSanctuaryWithDB');
+        // Try enterSanctuaryWithDB
         if (typeof window.enterSanctuaryWithDB === 'function') {
-          debugLog('Found enterSanctuaryWithDB, calling...');
           updateButtonStatus('Connecting to database...', 'loading');
           await new Promise(resolve => setTimeout(resolve, 500));
           await window.enterSanctuaryWithDB();
@@ -245,10 +228,8 @@
           return;
         }
         
-        // Method 3: Try enterSanctuary
-        debugLog('Attempting Method 3: enterSanctuary');
+        // Try enterSanctuary
         if (typeof window.enterSanctuary === 'function') {
-          debugLog('Found enterSanctuary, calling...');
           updateButtonStatus('Entering sanctuary...', 'loading');
           await new Promise(resolve => setTimeout(resolve, 500));
           window.enterSanctuary();
@@ -256,10 +237,8 @@
           return;
         }
         
-        // Method 4: Try MindFlowCore
-        debugLog('Attempting Method 4: MindFlowCore.enterNow');
+        // Try MindFlowCore
         if (window.MindFlowCore && typeof window.MindFlowCore.enterNow === 'function') {
-          debugLog('Found MindFlowCore.enterNow, calling...');
           updateButtonStatus('Starting MindFlow...', 'loading');
           await new Promise(resolve => setTimeout(resolve, 500));
           window.MindFlowCore.enterNow();
@@ -267,14 +246,12 @@
           return;
         }
         
-        // Method 5: Direct navigation with enhanced experience
-        debugLog('Attempting Method 5: Enhanced direct navigation');
+        // Direct navigation with enhanced experience
         updateButtonStatus('Navigating to sanctuary...', 'loading');
         
         // Store entry context
         sessionStorage.setItem('mindflow_entry_time', Date.now().toString());
         sessionStorage.setItem('mindflow_entry_method', 'index_button');
-        sessionStorage.setItem('mindflow_attempts', buttonAttempts.toString());
         
         // Add visual feedback before navigation
         await new Promise(resolve => setTimeout(resolve, 800));
@@ -284,19 +261,16 @@
         targetUrl.searchParams.set('entry', 'button');
         targetUrl.searchParams.set('timestamp', Date.now().toString());
         
-        debugLog('Navigating to:', targetUrl.toString());
         updateButtonStatus('Redirecting...', 'success');
         
         // Use replace to avoid back button issues
         window.location.replace(targetUrl.toString());
         
       } catch (error) {
-        debugLog('Error in handleEnterSanctuary:', error);
         updateButtonStatus('Error - Retrying...', 'error');
         
         // Fallback: Simple redirect
         setTimeout(() => {
-          debugLog('Fallback: Simple redirect');
           window.location.href = 'unified-sanctuary.html';
         }, 1500);
       }

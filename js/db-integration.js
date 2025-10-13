@@ -129,7 +129,7 @@ async function enterSanctuaryWithDB() {
     ]);
     if (conversation) {
       currentConversationId = conversation.conversation_id;
-      console.log('Started conversation session:', conversation.session_id);
+      // Started conversation session: ${conversation.session_id}
     }
   } catch (e) {
     console.warn('conversation creation failed (non-blocking):', e);
