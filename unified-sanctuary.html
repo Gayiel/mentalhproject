@@ -82,8 +82,8 @@
             </div>
             
             <!-- Welcome Message -->
-            <div style="margin: 25px 0; padding: 20px; background: rgba(255,255,255,0.8); border-radius: 12px; border-left: 4px solid #48bb78;">
-                <p style="font-size: 1.1em; line-height: 1.6; margin: 0; color: #2d3748;">
+            <div class="welcome-message-box">
+                <p class="welcome-message-text">
                     <strong>Thank you for taking this courageous step.</strong> Seeking help shows incredible strength. 
                     You've found a safe, supportive space where your feelings are valid, your privacy is protected, 
                     and caring professionals understand what you're going through.
@@ -115,55 +115,55 @@
             </div>
 
             <!-- Live Platform Metrics -->
-            <div style="margin: 30px 0; padding: 20px; background: rgba(72,187,120,0.1); border-radius: 12px; text-align: left;" id="real-time-impact">
-                <div class="expandable-header" onclick="toggleRealTimeData()" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
-                    <h3 style="color: #2d3748; margin: 0; display: flex; align-items: center; gap: 8px;">
+            <div class="real-time-impact" id="real-time-impact">
+                <div class="expandable-header expandable-header-style" onclick="toggleRealTimeData()">
+                    <h3 class="real-time-title">
                         🌟 Real-Time Mental Health Impact
-                        <div style="font-size: 0.6em; color: #64748b; font-weight: normal;">
+                        <div class="real-time-meta">
                             <span id="data-status" class="live-indicator">● LIVE</span> 
                             Updated <span id="last-update">now</span>
                         </div>
                     </h3>
-                    <button class="expand-btn" id="expand-realtime" style="background: none; border: none; font-size: 1.2em; color: #48bb78; cursor: pointer;" aria-label="Expand real-time data">▼</button>
+                    <button class="expand-btn expand-btn-style" id="expand-realtime" aria-label="Expand real-time data">▼</button>
                 </div>
-                <div class="expandable-content" id="realtime-content" style="margin-top: 15px;">
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px;">
-                    <div style="text-align: center;">
-                        <div style="font-size: 1.8em; font-weight: bold; color: #48bb78;" id="welcome-active">
+                <div class="expandable-content expandable-content-style" id="realtime-content">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-main green" id="welcome-active">
                             <span class="loading-placeholder">Loading...</span>
                         </div>
-                        <div style="font-size: 0.9em; color: #4a5568;">people seeking help today</div>
-                        <div style="font-size: 0.75em; color: #64748b; margin-top: 2px;" id="active-trend">+12% vs yesterday</div>
+                        <div class="stat-label">people seeking help today</div>
+                        <div class="stat-trend" id="active-trend">+12% vs yesterday</div>
                     </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 1.8em; font-weight: bold; color: #48bb78;" id="welcome-sessions">
+                    <div class="stat-item">
+                        <div class="stat-main green" id="welcome-sessions">
                             <span class="loading-placeholder">Loading...</span>
                         </div>
-                        <div style="font-size: 0.9em; color: #4a5568;">active mental health sessions</div>
-                        <div style="font-size: 0.75em; color: #64748b; margin-top: 2px;" id="sessions-trend">Peak hours: 2-4 PM</div>
+                        <div class="stat-label">active mental health sessions</div>
+                        <div class="stat-trend" id="sessions-trend">Peak hours: 2-4 PM</div>
                     </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 1.8em; font-weight: bold; color: #667eea;" id="welcome-crisis">
+                    <div class="stat-item">
+                        <div class="stat-main blue" id="welcome-crisis">
                             <span class="loading-placeholder">Loading...</span>
                         </div>
-                        <div style="font-size: 0.9em; color: #4a5568;">crisis interventions today</div>
-                        <div style="font-size: 0.75em; color: #64748b; margin-top: 2px;" id="crisis-trend">Response time: <2 min</div>
+                        <div class="stat-label">crisis interventions today</div>
+                        <div class="stat-trend" id="crisis-trend">Response time: <2 min</div>
                     </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 1.8em; font-weight: bold; color: #ed8936;" id="welcome-therapists">
+                    <div class="stat-item">
+                        <div class="stat-main orange" id="welcome-therapists">
                             <span class="loading-placeholder">Loading...</span>
                         </div>
-                        <div style="font-size: 0.9em; color: #4a5568;">licensed professionals online</div>
-                        <div style="font-size: 0.75em; color: #64748b; margin-top: 2px;" id="therapists-trend">Available 24/7</div>
+                        <div class="stat-label">licensed professionals online</div>
+                        <div class="stat-trend" id="therapists-trend">Available 24/7</div>
                     </div>
                 </div>
                 
                 <!-- National Statistics Section -->
-                <div style="font-size: 0.85em; color: #4a5568; text-align: center; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 15px; line-height: 1.4;">
+                <div class="national-stats">
                     <div style="margin-bottom: 8px;">
                         <strong>Current National Crisis Statistics (CDC, SAMHSA):</strong>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 10px 0;">
+                    <div class="national-stats-grid">
                         <div>📊 <span id="national-prevalence">Loading...</span> adults with mental illness</div>
                         <div>📈 <span id="treatment-gap">Loading...</span> receiving treatment</div>
                         <div>🆘 <span id="crisis-calls">Loading...</span> crisis calls daily</div>
@@ -171,13 +171,13 @@
                         <div>🏥 <span id="provider-shortage">Loading...</span> provider shortage areas</div>
                         <div>🎯 <span id="youth-stats">Loading...</span> youth affected</div>
                     </div>
-                    <div style="margin-top: 12px; font-style: italic; color: #48bb78;">
+                    <div class="national-message">
                         <strong>Together, we're bridging the gap</strong> • Real-time data helps us respond where help is needed most
                     </div>
                 </div>
                 
                 <!-- Data Sources -->
-                <div style="font-size: 0.7em; color: #64748b; text-align: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.05);">
+                <div class="data-sources">
                     Sources: CDC, NIMH, SAMHSA, Crisis Text Line, 988 Lifeline • Updated every 5 minutes
                 </div>
                 </div> <!-- Close expandable-content -->
@@ -219,7 +219,7 @@
                 </div>
             </div>
             
-            <div style="margin-top: 25px; font-size: 0.9em; opacity: 0.8; line-height: 1.5;">
+            <div class="privacy-notice">
                 <p>
                     <strong>🚨 Crisis Support:</strong> Call 988 (Suicide & Crisis Lifeline) or 911 for immediate emergency help
                     <br><br>
@@ -252,7 +252,7 @@
                             share whatever feels right for you. Licensed counselors and ethical AI work together to provide 
                             the support you deserve.
                         </p>
-                        <p style="font-style: italic; margin-top: 15px; opacity: 0.8; border-left: 3px solid #48bb78; padding-left: 12px;">
+                        <p class="chat-welcome-emphasis">
                             Your courage in being here matters. Your feelings are valid. You don't have to navigate this alone.
                         </p>
                     </div>
@@ -267,7 +267,7 @@
                         <div id="messages-container" class="messages-container">
                             <!-- Messages will be added here -->
                             <!-- Typing indicator -->
-                            <div id="typing-indicator" class="message ai-message typing-indicator" style="display: none;">
+                            <div id="typing-indicator" class="message ai-message typing-indicator hidden">
                                 <div class="message-avatar">🤖</div>
                                 <div class="message-bubble">
                                     <div class="typing-dots">
@@ -302,23 +302,23 @@
                             </div>
                             
                             <!-- Contextual Suggestions (hidden by default) -->
-                            <div id="contextual-suggestions" class="contextual-suggestions" style="display: none;">
+                            <div id="contextual-suggestions" class="contextual-suggestions hidden">
                                 <div class="suggestion-header">💡 Based on our conversation, you might find these helpful:</div>
                                 <div id="dynamic-suggestions" class="dynamic-suggestions"></div>
                             </div>
-                            <div class="legacy-links" style="margin-top: 18px; display: grid; gap: 10px;">
-                                <a class="btn-legacy" href="mind-flow-complete.html" style="display:flex; align-items:center; gap:10px; padding:12px 16px; border-radius:12px; background:rgba(128,90,213,0.08); border:1px solid rgba(128,90,213,0.2); color:#4c1d95; text-decoration:none; font-weight:600;">
-                                    <span style="font-size:1.4em;">🌀</span>
+                            <div class="legacy-links">
+                                <a class="btn-legacy mindflow" href="mind-flow-complete.html">
+                                    <span class="btn-legacy-icon">🌀</span>
                                     <span>
                                         MindFlow (Legacy full experience)
-                                        <div style="font-size:0.85em; color:#5b21b6; font-weight:500;">Jump into the original sanctuary interface</div>
+                                        <div class="btn-legacy-desc">Jump into the original sanctuary interface</div>
                                     </span>
                                 </a>
-                                <a class="btn-legacy" href="collaborative-mental-health.html" style="display:flex; align-items:center; gap:10px; padding:12px 16px; border-radius:12px; background:rgba(14,116,144,0.08); border:1px solid rgba(14,116,144,0.2); color:#0f172a; text-decoration:none; font-weight:600;">
-                                    <span style="font-size:1.4em;">🧩</span>
+                                <a class="btn-legacy collaborative" href="collaborative-mental-health.html">
+                                    <span class="btn-legacy-icon">🧩</span>
                                     <span>
                                         Collaborative Counselor Workspace
-                                        <div style="font-size:0.85em; color:#155e75; font-weight:500;">Coordinate with the counselor team dashboard</div>
+                                        <div class="btn-legacy-desc">Coordinate with the counselor team dashboard</div>
                                     </span>
                                 </a>
                             </div>
@@ -596,6 +596,7 @@
                 padding: 40px 20px;
                 background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,250,252,0.9));
                 border-radius: 20px;
+                -webkit-backdrop-filter: blur(10px);
                 backdrop-filter: blur(10px);
                 border: 1px solid rgba(255,255,255,0.2);
             }
@@ -1168,6 +1169,185 @@
             @keyframes fade-in {
                 from { opacity: 0; }
                 to { opacity: 1; }
+            }
+            
+            /* Inline style replacements */
+            .welcome-message-box {
+                margin: 25px 0;
+                padding: 20px;
+                background: rgba(255,255,255,0.8);
+                border-radius: 12px;
+                border-left: 4px solid #48bb78;
+            }
+            
+            .welcome-message-text {
+                font-size: 1.1em;
+                line-height: 1.6;
+                margin: 0;
+                color: #2d3748;
+            }
+            
+            .real-time-impact {
+                margin: 30px 0;
+                padding: 20px;
+                background: rgba(72,187,120,0.1);
+                border-radius: 12px;
+                text-align: left;
+            }
+            
+            .expandable-header-style {
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            
+            .real-time-title {
+                color: #2d3748;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .real-time-meta {
+                font-size: 0.6em;
+                color: #64748b;
+                font-weight: normal;
+            }
+            
+            .expand-btn-style {
+                background: none;
+                border: none;
+                font-size: 1.2em;
+                color: #48bb78;
+                cursor: pointer;
+            }
+            
+            .expandable-content-style {
+                margin-top: 15px;
+            }
+            
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .stat-item {
+                text-align: center;
+            }
+            
+            .stat-main {
+                font-size: 1.8em;
+                font-weight: bold;
+            }
+            
+            .stat-main.green { color: #48bb78; }
+            .stat-main.blue { color: #667eea; }
+            .stat-main.orange { color: #ed8936; }
+            
+            .stat-label {
+                font-size: 0.9em;
+                color: #4a5568;
+            }
+            
+            .stat-trend {
+                font-size: 0.75em;
+                color: #64748b;
+                margin-top: 2px;
+            }
+            
+            .national-stats {
+                font-size: 0.85em;
+                color: #4a5568;
+                text-align: center;
+                border-top: 1px solid rgba(0,0,0,0.1);
+                padding-top: 15px;
+                line-height: 1.4;
+            }
+            
+            .national-stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 10px;
+                margin: 10px 0;
+            }
+            
+            .national-message {
+                margin-top: 12px;
+                font-style: italic;
+                color: #48bb78;
+            }
+            
+            .data-sources {
+                font-size: 0.7em;
+                color: #64748b;
+                text-align: center;
+                margin-top: 10px;
+                padding-top: 8px;
+                border-top: 1px solid rgba(0,0,0,0.05);
+            }
+            
+            .privacy-notice {
+                margin-top: 25px;
+                font-size: 0.9em;
+                opacity: 0.8;
+                line-height: 1.5;
+            }
+            
+            .chat-welcome-emphasis {
+                font-style: italic;
+                margin-top: 15px;
+                opacity: 0.8;
+                border-left: 3px solid #48bb78;
+                padding-left: 12px;
+            }
+            
+            .legacy-links {
+                margin-top: 18px;
+                display: grid;
+                gap: 10px;
+            }
+            
+            .btn-legacy {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 12px 16px;
+                border-radius: 12px;
+                text-decoration: none;
+                font-weight: 600;
+            }
+            
+            .btn-legacy.mindflow {
+                background: rgba(128,90,213,0.08);
+                border: 1px solid rgba(128,90,213,0.2);
+                color: #4c1d95;
+            }
+            
+            .btn-legacy.collaborative {
+                background: rgba(14,116,144,0.08);
+                border: 1px solid rgba(14,116,144,0.2);
+                color: #0f172a;
+            }
+            
+            .btn-legacy-icon {
+                font-size: 1.4em;
+            }
+            
+            .btn-legacy-desc {
+                font-size: 0.85em;
+                font-weight: 500;
+            }
+            
+            .btn-legacy.mindflow .btn-legacy-desc {
+                color: #5b21b6;
+            }
+            
+            .btn-legacy.collaborative .btn-legacy-desc {
+                color: #155e75;
             }
         </style>
 
