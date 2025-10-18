@@ -669,3 +669,10 @@ function dismissCrisisModal(agree){
   }
 }
 
+// Close the MindFlowSanctuaryUnified class
+}
+
+// Initialize the sanctuary when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  window.sanctuary = new MindFlowSanctuaryUnified();
+});

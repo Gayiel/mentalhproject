@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="MindFlow Sanctuary - A secure, confidential mental health support platform with licensed counselors and AI assistance">
-    <meta name="theme-color" content="#7DB8C5">
+    <!-- <meta name="theme-color" content="#7DB8C5"> Disabled: Not supported by Firefox, Opera -->
     <title>MindFlow Sanctuary - Your Safe Space for Mental Wellness</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="css/accessibility.css">
@@ -160,7 +160,7 @@
                 
                 <!-- National Statistics Section -->
                 <div class="national-stats">
-                    <div style="margin-bottom: 8px;">
+                    <div class="national-stats-margin">
                         <strong>Current National Crisis Statistics (CDC, SAMHSA):</strong>
                     </div>
                     <div class="national-stats-grid">
@@ -332,7 +332,7 @@
                         <div class="stat-row"><div class="stat-label">Active conversations</div><div class="stat-value" id="stat-sessions">847</div></div>
                         <div class="stat-row"><div class="stat-label">Avg. wellbeing improvement</div><div class="stat-value" id="stat-distress">4.2/10</div></div>
                         <div class="stat-row"><div class="stat-label">Crisis interventions</div><div class="stat-value" id="stat-crisis">23</div></div>
-                        <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 0.8em; color: #64748b; text-align: center; line-height: 1.3;">
+                        <div class="treatment-gap-info">
                             <strong>Treatment Gap:</strong> Only 47.2% of adults with mental illness received treatment in 2021 (NIMH)<br>
                             <em>We're bridging that gap with accessible, professional care</em>
                         </div>
@@ -386,23 +386,23 @@
                         </div>
 
                         <!-- Professional Therapist & Clinics Directory -->
-                        <section class="pro-directory fade-up" aria-labelledby="dir-title" style="margin-top:16px;">
+                        <section class="pro-directory fade-up pro-directory-margin" aria-labelledby="dir-title">
                             <h3 id="dir-title">🏥 Professional Therapists & Clinics</h3>
-                            <p style="color:#64748b; margin:6px 0 14px;">Curated by MindFlow Sanctuary. Availability updates regularly.</p>
+                            <p class="pro-directory-subtitle">Curated by MindFlow Sanctuary. Availability updates regularly.</p>
                             <div id="therapist-grid" class="therapist-list"></div>
-                            <div class="note" id="therapist-note" style="color:#64748b; font-size:.9em; margin-top:8px;"></div>
+                            <div class="note therapist-note" id="therapist-note"></div>
                         </section>
                         
                         <!-- Security & Compliance -->
-                        <div style="margin-top: 20px; padding: 16px; background: rgba(72,187,120,0.05); border-radius: 12px; border: 1px solid rgba(72,187,120,0.2);">
-                            <h4 style="color: #2d3748; margin-bottom: 8px; font-size: 1em;">🔒 Your Security</h4>
-                            <div style="font-size: 0.85em; color: #4a5568; line-height: 1.4;">
+                        <div class="security-section">
+                            <h4 class="security-title">🔒 Your Security</h4>
+                            <div class="security-features">
                                 <div>✓ HIPAA-compliant privacy protection</div>
                                 <div>✓ End-to-end encrypted conversations</div>
                                 <div>✓ Licensed counselor oversight</div>
                                 <div>✓ Your data, your control</div>
                             </div>
-                            <div style="margin-top: 8px; font-size: 0.8em; color: #64748b; font-style: italic;">
+                            <div class="security-footer">
                                 Trusted by healthcare professionals nationwide
                             </div>
                         </div>
@@ -418,15 +418,15 @@
             </div>
             
             <!-- Trust & Compliance -->
-            <div style="margin: 20px 0; padding: 20px; background: rgba(255,255,255,0.6); border-radius: 12px;">
-                <h3 style="color: #2d3748; margin-bottom: 15px; text-align: center;">Our Professional Standards</h3>
+            <div class="professional-standards">
+                <h3 class="professional-standards-title">Our Professional Standards</h3>
                 <div class="privacy-badges">
                     <div class="privacy-badge">🏥 HIPAA Compliant</div>
                         <div class="privacy-badge">🔒 End-to-End Encrypted</div>
                     <div class="privacy-badge">👩‍⚕️ Licensed Oversight</div>
                     <div class="privacy-badge">✋ User Consent Always</div>
                 </div>
-                <p style="margin-top: 15px; font-size: 0.95em; line-height: 1.5;">
+                <p class="professional-commitment">
                     <strong>Professional Commitment:</strong> Every conversation is monitored by licensed mental health 
                     counselors who ensure ethical AI practices and quality care. We meet or exceed all healthcare 
                     privacy standards because your trust and wellbeing are paramount.
@@ -434,15 +434,15 @@
             </div>
 
             <!-- National Context -->
-            <div style="margin: 20px 0; padding: 15px; background: rgba(59,130,246,0.05); border-radius: 8px; border-left: 4px solid #3b82f6;">
-                <div style="font-size: 0.9em; color: #4a5568; text-align: center; line-height: 1.4;">
+            <div class="national-context">
+                <div class="national-context-text">
                     <strong>You're part of a larger movement:</strong> Mental health treatment works. According to NIMH, 
                     therapy and support significantly improve outcomes for anxiety, depression, and other challenges. 
                     <em>Taking care of your mental health is as important as your physical health.</em>
                 </div>
             </div>
 
-            <div style="text-align: center; color: #64748b; font-size: 0.85em; margin-top: 15px;">
+            <div class="copyright-footer">
                 © 2025 MindFlow Sanctuary • Licensed Mental Health Platform • Ethical AI Partnership
             </div>
         </footer>
@@ -460,7 +460,7 @@
     <div id="explore-overlay" class="explore-overlay" role="dialog" aria-modal="true" aria-labelledby="explore-title">
         <div class="explore-sheet">
             <div class="explore-header">
-                <div style="display:flex; align-items:center; gap:8px;">
+                <div class="explore-header-content">
                     <span>🧭</span>
                     <strong id="explore-title">Explore your options</strong>
                 </div>
@@ -474,7 +474,7 @@
                     <option value="CA">Canada</option>
                     <option value="default">International</option>
                 </select>
-                <small style="color:#64748b;">Used for crisis resources and referrals</small>
+                <small class="region-helper">Used for crisis resources and referrals</small>
             </div>
             <div class="explore-body">
                 <div class="explore-card" onclick="focusChat()">
@@ -533,11 +533,11 @@
     <!-- Counselor dashboard panel -->
     <aside id="dashboard-panel" class="dashboard-panel" aria-hidden="true" aria-label="Counselor Dashboard">
         <div class="dashboard-header">
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div class="dashboard-header-left">
                 <span>🧑‍⚕️</span>
                 <strong>Professional Dashboard</strong>
             </div>
-            <div style="display:flex; gap:8px;">
+            <div class="dashboard-header-right">
                 <button class="demo-btn" onclick="runCrisisDemo()" title="Run Crisis Demo">🧪 Demo</button>
                 <button class="close-btn" onclick="toggleDashboard(false)">Close</button>
             </div>
@@ -546,13 +546,13 @@
             <!-- Platform Overview -->
             <div class="dash-card">
                 <div class="dash-title">📈 Today's Impact</div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.9em;">
-                    <div><strong>3,247</strong><br><span style="color: #64748b;">people supported</span></div>
-                    <div><strong>847</strong><br><span style="color: #64748b;">active sessions</span></div>
-                    <div><strong>4.2/10</strong><br><span style="color: #64748b;">avg. improvement</span></div>
-                    <div><strong>23</strong><br><span style="color: #64748b;">crisis interventions</span></div>
+                <div class="impact-grid">
+                    <div><strong>3,247</strong><br><span class="impact-grid-label">people supported</span></div>
+                    <div><strong>847</strong><br><span class="impact-grid-label">active sessions</span></div>
+                    <div><strong>4.2/10</strong><br><span class="impact-grid-label">avg. improvement</span></div>
+                    <div><strong>23</strong><br><span class="impact-grid-label">crisis interventions</span></div>
                 </div>
-                <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #e5e7eb; font-size: 0.8em; color: #64748b;">
+                <div class="monthly-stats">
                     <strong>Monthly:</strong> 84,392 users • 97.3% satisfaction • 4.8/5 counselor rating
                 </div>
             </div>
@@ -568,7 +568,7 @@
             <div class="dash-card">
                 <div class="dash-title">⚠️ Crisis Alerts</div>
                 <div id="crisis-count">0 alerts this session</div>
-                <div style="margin-top: 8px; font-size: 0.85em; color: #64748b;">
+                <div class="crisis-alert-info">
                     Licensed counselors respond to all crisis flags within 2 minutes
                 </div>
             </div>

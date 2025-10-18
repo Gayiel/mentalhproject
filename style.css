@@ -1658,3 +1658,151 @@ html { scroll-behavior: smooth; }
 .region-row select { padding:8px 10px; border:1px solid #cbd5e1; border-radius:10px; }
 .close-x { background:#e2e8f0; border:none; border-radius:8px; padding:6px 10px; cursor:pointer; }
 
+/* === Inline style cleanup classes === */
+/* National statistics margin */
+.national-stats-margin { margin-bottom: 8px; }
+
+/* Treatment gap info styling */
+.treatment-gap-info { 
+  margin-top: 12px; 
+  padding-top: 8px; 
+  border-top: 1px solid #e2e8f0; 
+  font-size: 0.8em; 
+  color: #64748b; 
+  text-align: center; 
+  line-height: 1.3;
+}
+
+/* Professional directory section */
+.pro-directory-margin { margin-top: 16px; }
+.pro-directory-subtitle { color: #64748b; margin: 6px 0 14px; }
+.therapist-note { color: #64748b; font-size: 0.9em; margin-top: 8px; }
+
+/* Security & Compliance section */
+.security-section {
+  margin-top: 20px; 
+  padding: 16px; 
+  background: rgba(72,187,120,0.05); 
+  border-radius: 12px; 
+  border: 1px solid rgba(72,187,120,0.2);
+}
+
+.security-title {
+  color: #2d3748; 
+  margin-bottom: 8px; 
+  font-size: 1em;
+}
+
+.security-features {
+  font-size: 0.85em; 
+  color: #4a5568; 
+  line-height: 1.4;
+}
+
+.security-footer {
+  margin-top: 8px; 
+  font-size: 0.8em; 
+  color: #64748b; 
+  font-style: italic;
+}
+
+/* Footer professional standards */
+.professional-standards {
+  margin: 20px 0; 
+  padding: 20px; 
+  background: rgba(255,255,255,0.6); 
+  border-radius: 12px;
+}
+
+.professional-standards-title {
+  color: #2d3748; 
+  margin-bottom: 15px; 
+  text-align: center;
+}
+
+.professional-commitment {
+  margin-top: 15px; 
+  font-size: 0.95em; 
+  line-height: 1.5;
+}
+
+/* National context section */
+.national-context {
+  margin: 20px 0; 
+  padding: 15px; 
+  background: rgba(59,130,246,0.05); 
+  border-radius: 8px; 
+  border-left: 4px solid #3b82f6;
+}
+
+.national-context-text {
+  font-size: 0.9em; 
+  color: #4a5568; 
+  text-align: center; 
+  line-height: 1.4;
+}
+
+/* Copyright footer */
+.copyright-footer {
+  text-align: center; 
+  color: #64748b; 
+  font-size: 0.85em; 
+  margin-top: 15px;
+}
+
+/* Explore overlay styles */
+.explore-header-content { display: flex; align-items: center; gap: 8px; }
+.region-helper { color: #64748b; }
+
+/* Dashboard panel styles */
+.dashboard-header-left { display: flex; align-items: center; gap: 8px; }
+.dashboard-header-right { display: flex; gap: 8px; }
+
+/* Dashboard impact grid */
+.impact-grid {
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 12px; 
+  font-size: 0.9em;
+}
+
+.impact-grid-label { color: #64748b; }
+
+.monthly-stats {
+  margin-top: 12px; 
+  padding-top: 8px; 
+  border-top: 1px solid #e5e7eb; 
+  font-size: 0.8em; 
+  color: #64748b;
+}
+
+/* Crisis alert info */
+.crisis-alert-info {
+  margin-top: 8px; 
+  font-size: 0.85em; 
+  color: #64748b;
+}
+
+/* Resources page specific styles */
+.resources-container {
+  max-width: 920px;
+  margin: 18px auto;
+  padding: 18px;
+}
+
+.resources-actions {
+  display: flex; 
+  gap: 8px; 
+  justify-content: flex-end; 
+  margin-bottom: 8px;
+}
+
+.resources-card {
+  margin-top: 16px;
+}
+
+.resources-footer {
+  margin-top: 18px;
+  color: rgba(255,255,255,0.8);
+}
+

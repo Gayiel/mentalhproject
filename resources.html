@@ -15,8 +15,8 @@
     <nav class="top-actions"><a href="index.html" class="secondary-btn">Back</a></nav>
   </header>
 
-  <main id="resources-container" style="max-width:920px;margin:18px auto;padding:18px;">
-    <div style="display:flex; gap:8px; justify-content:flex-end; margin-bottom:8px;">
+  <main id="resources-container" class="resources-container">
+    <div class="resources-actions">
       <button id="resources-find-clinic" class="control-btn">Find nearby clinics</button>
       <a href="index.html" class="secondary-btn">Back</a>
     </div>
@@ -29,7 +29,7 @@
       </ul>
     </section>
 
-    <section class="card" style="margin-top:16px;">
+    <section class="card resources-card">
       <h2>Affordable & Sliding Scale Services</h2>
       <p class="text-muted">Local clinics and community centers often offer low-cost counseling.</p>
       <ul>
@@ -38,7 +38,7 @@
       </ul>
     </section>
 
-    <section class="card" style="margin-top:16px;">
+    <section class="card resources-card">
       <h2>Self-Help & Tools</h2>
       <ul>
         <li><a href="https://www.nimh.nih.gov/">NIMH - Information and resources</a></li>
@@ -46,7 +46,7 @@
       </ul>
     </section>
 
-    <section class="card" style="margin-top:16px;">
+    <section class="card resources-card">
       <h2>Community & Peer Support</h2>
       <ul>
         <li><a href="https://www.7cups.com/">7 Cups - Free chat with trained listeners</a></li>
@@ -54,7 +54,7 @@
       </ul>
     </section>
 
-    <footer style="margin-top:18px;color:rgba(255,255,255,0.8);">If you need localized resources, search your city or country on the official health department site.</footer>
+    <footer class="resources-footer">If you need localized resources, search your city or country on the official health department site.</footer>
   </main>
   <script>
     document.getElementById('resources-find-clinic').addEventListener('click', () => {
