@@ -4,8 +4,41 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Mind Flow - Mental Health Support</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            animation: {
+              'water-wave': 'water-wave 12s ease-in-out infinite',
+              'water-flow': 'water-flow 15s linear infinite',
+              'fade-in': 'fade-in 0.5s ease-out',
+              'slide-up': 'slide-up 0.3s ease-out',
+              'pulse-gentle': 'pulse-gentle 2s ease-in-out infinite'
+            },
+            keyframes: {
+              'fade-in': {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' }
+              },
+              'slide-up': {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' }
+              },
+              'pulse-gentle': {
+                '0%, 100%': { opacity: '1' },
+                '50%': { opacity: '0.8' }
+              }
+            }
+          }
+        }
+      }
+    </script>
+    
     <style>
-        /* Clean, comprehensive design for combined app */
+        /* Enhanced design with Tailwind integration */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -16,7 +49,95 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
             color: #1a1a1a;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+
+        /* Navigation button styles */
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        
+        .nav-btn:hover {
+            color: #2563eb;
+            background-color: #dbeafe;
+            transform: scale(1.05);
+        }
+        
+        .nav-btn.active {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Enhanced Suggestion Buttons */
+        .intelligent-suggestions {
+            margin: 16px 0;
+            padding: 12px;
             background: #f8fafc;
+            border-radius: 12px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .suggestion-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .suggestion-btn {
+            padding: 8px 16px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .suggestion-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Enhanced Message Styling */
+        .message.user {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            margin-left: 20%;
+            border-radius: 18px 18px 4px 18px;
+            animation: slide-up 0.3s ease-out;
+        }
+
+        .message.bot {
+            background: white;
+            color: #1f2937;
+            margin-right: 20%;
+            border-radius: 18px 18px 18px 4px;
+            border: 1px solid #e5e7eb;
+            animation: fade-in 0.5s ease-out;
+        }
+
+        /* Progress Section Enhancements */
+        #mood-chart {
+            border-radius: 8px;
+        }
+
+        .crisis-warning.show {
+            display: block !important;
+            animation: pulse-gentle 1s ease-in-out infinite;
         }
 
         /* Navigation */
@@ -500,15 +621,41 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="nav-bar">
-        <div class="nav-container">
-            <div class="nav-brand">Mind Flow</div>
-            <div class="nav-menu">
-                <div class="nav-item active" data-section="welcome">Home</div>
-                <div class="nav-item" data-section="chat">Chat</div>
-                <div class="nav-item" data-section="resources">Resources</div>
-                <div class="nav-item" data-section="about">About</div>
+    <!-- Enhanced Navigation with Tailwind -->
+    <nav class="bg-white shadow-lg border-b border-slate-200 sticky top-0 z-50 backdrop-blur-lg bg-white/95">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-4">
+                    <div class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        🧠 Mind Flow
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <button class="nav-btn active" data-section="welcome">
+                        <span>🏠</span> Home
+                    </button>
+                    <button class="nav-btn" data-section="chat">
+                        <span>💬</span> Chat
+                    </button>
+                    <button class="nav-btn" data-section="progress">
+                        <span>📊</span> Progress
+                    </button>
+                    <button class="nav-btn" data-section="resources">
+                        <span>📚</span> Resources
+                    </button>
+                </div>
+                
+                <!-- Conversation Controls -->
+                <div class="flex items-center gap-2">
+                    <button id="clear-conversation" class="px-3 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-1" title="Clear current conversation">
+                        <span>🗑️</span>
+                        <span class="hidden sm:inline">Clear</span>
+                    </button>
+                    <button id="save-conversation" class="px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-1" title="Save conversation">
+                        <span>💾</span>
+                        <span class="hidden sm:inline">Save</span>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -559,6 +706,95 @@
                             rows="1"
                         ></textarea>
                         <button id="send-btn" class="send-btn">→</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Progress Tracking Section -->
+        <section id="progress" class="section">
+            <div class="max-w-6xl mx-auto p-6 space-y-8">
+                <!-- Header -->
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">📊 Your Mental Health Journey</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Track your progress, view conversation history, and gain insights into your mental wellness journey.</p>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Conversations</p>
+                                <p class="text-2xl font-bold text-blue-600" id="total-conversations">0</p>
+                            </div>
+                            <div class="text-3xl">💬</div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Active Days</p>
+                                <p class="text-2xl font-bold text-green-600" id="active-days">0</p>
+                            </div>
+                            <div class="text-3xl">🌟</div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Mood Improvements</p>
+                                <p class="text-2xl font-bold text-purple-600" id="mood-improvements">0</p>
+                            </div>
+                            <div class="text-3xl">📈</div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Streak</p>
+                                <p class="text-2xl font-bold text-orange-600" id="current-streak">0</p>
+                            </div>
+                            <div class="text-3xl">🔥</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Chart -->
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">📈 Mood Tracking Over Time</h3>
+                    <div class="relative h-64 bg-gray-50 rounded-lg p-4">
+                        <canvas id="mood-chart" class="w-full h-full"></canvas>
+                        <div id="no-data-message" class="absolute inset-0 flex items-center justify-center text-gray-500">
+                            <div class="text-center">
+                                <div class="text-4xl mb-2">📊</div>
+                                <p>Start having conversations to see your progress chart!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conversation History -->
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold text-gray-800">💭 Recent Conversations</h3>
+                        <button id="export-data" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-2">
+                            <span>📄</span> Export Data
+                        </button>
+                    </div>
+                    <div id="conversation-history" class="space-y-3">
+                        <div class="text-center py-8 text-gray-500">
+                            <div class="text-4xl mb-2">💭</div>
+                            <p>No conversations yet. Start chatting to build your history!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insights Panel -->
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100">
+                    <h3 class="text-xl font-semibold text-purple-800 mb-4">💡 Personalized Insights</h3>
+                    <div id="insights-container" class="space-y-3">
+                        <p class="text-purple-700">Start using the chat feature to unlock personalized insights about your mental health journey!</p>
                     </div>
                 </div>
             </div>
@@ -683,42 +919,131 @@
 
     <!-- JavaScript for combined functionality -->
     <script>
-        // Navigation functionality
+        // Enhanced Navigation with Progress Updates
         function showSection(sectionName) {
             // Hide all sections
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
             });
             
-            // Remove active from all nav items
-            document.querySelectorAll('.nav-item').forEach(item => {
+            // Remove active from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(item => {
                 item.classList.remove('active');
             });
             
             // Show selected section
             document.getElementById(sectionName).classList.add('active');
             
-            // Add active to corresponding nav item
+            // Add active to corresponding nav button
             document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
             
-            // Initialize chat if showing chat section
+            // Initialize specific sections
             if (sectionName === 'chat' && !window.chatInitialized) {
                 initializeChat();
+            } else if (sectionName === 'progress') {
+                updateProgressStats();
+                renderConversationHistory();
             }
         }
 
-        // Add click handlers to nav items
-        document.querySelectorAll('.nav-item').forEach(item => {
+        // Add click handlers to nav buttons
+        document.querySelectorAll('.nav-btn').forEach(item => {
             item.addEventListener('click', () => {
                 const section = item.getAttribute('data-section');
                 showSection(section);
             });
         });
 
-        // Chat functionality
+        // Enhanced Chat functionality with Conversation Tracking
         let chatInitialized = false;
         let messages = [];
         let isTyping = false;
+        let currentConversation = null;
+        let conversationHistory = JSON.parse(localStorage.getItem('mindflow_conversations') || '[]');
+        let lastMoodRating = null;
+        let conversationContext = {
+            topics: [],
+            emotions: [],
+            concerns: [],
+            followUps: []
+        };
+
+        // Conversation Management
+        class ConversationManager {
+            constructor() {
+                this.conversations = this.loadConversations();
+                this.currentSession = null;
+            }
+
+            loadConversations() {
+                try {
+                    return JSON.parse(localStorage.getItem('mindflow_conversations') || '[]');
+                } catch (e) {
+                    console.error('Error loading conversations:', e);
+                    return [];
+                }
+            }
+
+            saveConversations() {
+                try {
+                    localStorage.setItem('mindflow_conversations', JSON.stringify(this.conversations));
+                } catch (e) {
+                    console.error('Error saving conversations:', e);
+                }
+            }
+
+            startNewConversation() {
+                this.currentSession = {
+                    id: Date.now().toString(),
+                    startTime: new Date(),
+                    messages: [],
+                    mood: null,
+                    topics: [],
+                    emotions: [],
+                    insights: []
+                };
+                return this.currentSession;
+            }
+
+            addMessage(message, sender = 'user', emotion = null) {
+                if (!this.currentSession) this.startNewConversation();
+                
+                const msgData = {
+                    text: message,
+                    sender,
+                    timestamp: new Date(),
+                    emotion
+                };
+                
+                this.currentSession.messages.push(msgData);
+                this.saveConversations();
+                return msgData;
+            }
+
+            endConversation(mood = null) {
+                if (!this.currentSession) return;
+                
+                this.currentSession.endTime = new Date();
+                this.currentSession.mood = mood;
+                this.conversations.unshift(this.currentSession);
+                
+                // Keep only last 50 conversations
+                if (this.conversations.length > 50) {
+                    this.conversations = this.conversations.slice(0, 50);
+                }
+                
+                this.saveConversations();
+                this.currentSession = null;
+            }
+
+            clearAllConversations() {
+                this.conversations = [];
+                this.currentSession = null;
+                localStorage.removeItem('mindflow_conversations');
+            }
+        }
+
+        const conversationManager = new ConversationManager();
 
         function initializeChat() {
             if (chatInitialized) return;
@@ -845,21 +1170,306 @@
         function processMessage(message) {
             hideTyping();
             
+            // Track the message in conversation
+            conversationManager.addMessage(message, 'user');
+            
+            // Analyze message for emotional content and context
+            const analysis = analyzeMessage(message);
+            
+            // Update conversation context
+            updateConversationContext(analysis);
+            
             // Check for crisis - comprehensive keyword list
             if (isCrisis(message)) {
                 handleCrisis();
                 return;
             }
 
-            // Normal response
-            const topic = detectTopic(message);
-            const response = getResponse(topic);
+            // Generate intelligent, inquisitive response
+            const response = generateInquisitiveResponse(analysis, message);
             
-            addBotMessage(response);
+            addBotMessage(response.main);
+            conversationManager.addMessage(response.main, 'bot');
             
+            // Ask follow-up questions to encourage deeper conversation
             setTimeout(() => {
-                addSuggestions(topic);
-            }, 1000);
+                if (response.followUp) {
+                    addBotMessage(response.followUp);
+                    conversationManager.addMessage(response.followUp, 'bot');
+                }
+            }, 1500);
+            
+            // Add contextual suggestions
+            setTimeout(() => {
+                addIntelligentSuggestions(analysis);
+            }, 2500);
+        }
+
+        function analyzeMessage(message) {
+            const text = message.toLowerCase();
+            
+            const emotionIndicators = {
+                anxiety: /anxi|panic|stress|overwhelm|worried|nervous|scared|fear|tense/.test(text),
+                sadness: /sad|depress|down|hopeless|empty|cry|tearful|blue|miserable/.test(text),
+                anger: /angry|mad|frustrated|irritated|pissed|furious|annoyed|rage/.test(text),
+                loneliness: /lonely|alone|isolat|no friends|nobody|abandoned/.test(text),
+                joy: /happy|joy|excited|great|awesome|amazing|wonderful|fantastic/.test(text),
+                confusion: /confused|lost|don't know|uncertain|unclear|mixed up/.test(text),
+                guilt: /guilt|shame|sorry|fault|blame|regret|should have/.test(text),
+                hope: /hope|better|improve|try|want to|looking forward/.test(text)
+            };
+
+            const topicIndicators = {
+                relationships: /relationship|partner|boyfriend|girlfriend|spouse|friend|family|parent|sibling/.test(text),
+                work: /work|job|career|boss|coworker|office|stress|deadline|project/.test(text),
+                school: /school|college|university|class|teacher|professor|exam|grades|study/.test(text),
+                health: /sick|illness|doctor|hospital|medical|pain|hurt|injury/.test(text),
+                sleep: /sleep|insomnia|tired|exhausted|can't sleep|nightmares|dreams/.test(text),
+                selfEsteem: /ugly|stupid|worthless|failure|not good enough|hate myself/.test(text),
+                future: /future|tomorrow|next week|plans|goals|dreams|career|life/.test(text),
+                past: /past|childhood|before|used to|remember|regret|miss/.test(text)
+            };
+
+            const intensityWords = /very|extremely|really|so|incredibly|totally|completely|absolutely/.test(text);
+            const questionWords = /why|how|what|when|where|should|could|would/.test(text);
+            const personalPronouns = /\bi\b|\bme\b|\bmy\b|\bmyself\b/.test(text);
+
+            return {
+                emotions: Object.keys(emotionIndicators).filter(emotion => emotionIndicators[emotion]),
+                topics: Object.keys(topicIndicators).filter(topic => topicIndicators[topic]),
+                intensity: intensityWords,
+                hasQuestions: questionWords,
+                isPersonal: personalPronouns,
+                messageLength: message.length,
+                wordCount: message.split(' ').length
+            };
+        }
+
+        function updateConversationContext(analysis) {
+            conversationContext.emotions.push(...analysis.emotions);
+            conversationContext.topics.push(...analysis.topics);
+            
+            // Keep only last 5 of each for context
+            conversationContext.emotions = conversationContext.emotions.slice(-5);
+            conversationContext.topics = conversationContext.topics.slice(-5);
+        }
+
+        function generateInquisitiveResponse(analysis, originalMessage) {
+            const messageCount = messages.filter(m => m.type === 'user').length;
+            const primaryEmotion = analysis.emotions[0];
+            const primaryTopic = analysis.topics[0];
+            
+            let mainResponse = '';
+            let followUp = '';
+
+            // Personalized responses based on conversation history and analysis
+            if (messageCount === 1) {
+                // First message - be welcoming but curious
+                if (primaryEmotion) {
+                    mainResponse = `I can hear that you're feeling ${primaryEmotion}. Thank you for trusting me with that. It takes courage to reach out when we're struggling.`;
+                    followUp = `I'd love to understand more about what's bringing up these feelings for you. What's been happening in your life recently?`;
+                } else {
+                    mainResponse = `I'm here to listen and support you. What you've shared is important.`;
+                    followUp = `Can you tell me a bit more about what's been on your mind lately? I want to understand what you're going through.`;
+                }
+            } else {
+                // Subsequent messages - dig deeper based on context
+                if (analysis.isPersonal && primaryEmotion) {
+                    mainResponse = getEmpatheticResponse(primaryEmotion, primaryTopic);
+                    followUp = generateDeepQuestions(primaryEmotion, primaryTopic, conversationContext);
+                } else if (analysis.hasQuestions) {
+                    mainResponse = "Those are really important questions you're asking. It sounds like you're trying to make sense of a difficult situation.";
+                    followUp = "Sometimes when we're asking 'why' or 'how,' it's because something unexpected or painful has happened. What's prompting these thoughts for you?";
+                } else {
+                    mainResponse = generateContextualResponse(analysis, conversationContext);
+                    followUp = generateCuriousFollowUp(analysis, messageCount);
+                }
+            }
+
+            return { main: mainResponse, followUp: followUp };
+        }
+
+        function getEmpatheticResponse(emotion, topic) {
+            const responses = {
+                anxiety: {
+                    work: "Work-related anxiety can feel all-consuming. Your nervous system is trying to protect you, but it sounds like it's in overdrive.",
+                    relationships: "Anxiety in relationships can create this constant worry about what others think or whether connections are secure.",
+                    general: "Anxiety has a way of making everything feel urgent and overwhelming, even things that might normally feel manageable."
+                },
+                sadness: {
+                    relationships: "Relationship pain cuts so deep because our connections with others are fundamental to who we are.",
+                    past: "Sadness about the past often carries grief for what we've lost or what could have been different.",
+                    general: "Sadness is one of those emotions that can feel like it's coloring everything else in your world right now."
+                },
+                loneliness: {
+                    general: "Loneliness is such a profound human experience. It's your heart telling you that connection matters to you.",
+                    relationships: "It's possible to feel lonely even around people, especially if we don't feel truly seen or understood.",
+                    work: "Workplace loneliness can be particularly isolating - being around people all day but not feeling connected."
+                },
+                anger: {
+                    work: "Workplace anger often signals that your values or boundaries are being violated in some way.",
+                    relationships: "Anger in relationships usually points to hurt feelings or unmet needs underneath.",
+                    general: "Anger is often our psyche's way of saying 'this isn't okay' - it's information about what matters to you."
+                }
+            };
+            
+            return responses[emotion]?.[topic] || responses[emotion]?.general || `${emotion} is a completely valid response to whatever you're experiencing right now.`;
+        }
+
+        function generateDeepQuestions(emotion, topic, context) {
+            const questionSets = {
+                anxiety: [
+                    "What does the anxiety feel like in your body? Does it show up as tension, racing thoughts, or something else?",
+                    "When did you first notice these anxious feelings starting to build up?",
+                    "Are there specific situations or times of day when the anxiety feels more intense?",
+                    "What thoughts tend to go through your mind when the anxiety is at its peak?"
+                ],
+                sadness: [
+                    "How long have you been carrying this sadness? Is it something recent or has it been building for a while?",
+                    "What does this sadness feel like for you? Is it more like emptiness, heaviness, or something else?",
+                    "Are there particular moments or memories that intensify these sad feelings?",
+                    "Who in your life knows about what you're going through right now?"
+                ],
+                loneliness: [
+                    "What kind of connection are you most longing for right now?",
+                    "When was the last time you felt truly understood by someone?",
+                    "Do you find yourself pulling away from others, or do you feel like others are distant from you?",
+                    "What makes you feel most like yourself when you're with other people?"
+                ],
+                anger: [
+                    "What's underneath this anger for you? Sometimes anger protects other feelings.",
+                    "How do you typically handle anger? Do you express it, hold it in, or something else?",
+                    "What would need to change for this anger to feel resolved?",
+                    "Who or what do you think this anger is really directed toward?"
+                ]
+            };
+
+            const questions = questionSets[emotion] || [
+                "What's the most important thing you want me to understand about what you're going through?",
+                "How has this been affecting other parts of your life?",
+                "What would it feel like if this situation improved, even just a little bit?"
+            ];
+
+            return questions[Math.floor(Math.random() * questions.length)];
+        }
+
+        function generateContextualResponse(analysis, context) {
+            if (context.emotions.length > 0) {
+                const recentEmotions = [...new Set(context.emotions.slice(-3))];
+                return `I notice you've been experiencing ${recentEmotions.join(', ')} feelings. These are all very human responses to whatever you're navigating.`;
+            }
+            
+            if (context.topics.length > 0) {
+                const recentTopics = [...new Set(context.topics.slice(-3))];
+                return `It sounds like ${recentTopics.join(' and ')} have been on your mind. These are important areas of life.`;
+            }
+            
+            return "I'm listening carefully to what you're sharing. Your experiences matter.";
+        }
+
+        function generateCuriousFollowUp(analysis, messageCount) {
+            const followUps = [
+                "What's been the hardest part about all of this for you?",
+                "How long have you been dealing with these feelings?",
+                "What would support look like for you right now?",
+                "What do you think you need most in this moment?",
+                "Is there something you wish people understood about what you're going through?",
+                "What thoughts keep coming back to you about this situation?",
+                "How has this been affecting your daily life?",
+                "What would it mean to you if things started to feel a little easier?",
+                "Who in your life knows what you're going through right now?",
+                "What part of this feels most overwhelming to you?"
+            ];
+            
+            if (messageCount > 3) {
+                followUps.push(
+                    "Looking back at what we've talked about, what stands out most to you?",
+                    "What's something you haven't mentioned yet that feels important?",
+                    "How are you feeling about our conversation so far?"
+                );
+            }
+            
+            return followUps[Math.floor(Math.random() * followUps.length)];
+        }
+
+        function addIntelligentSuggestions(analysis) {
+            const messagesEl = document.getElementById('messages');
+            const suggestionsEl = document.createElement('div');
+            suggestionsEl.className = 'intelligent-suggestions';
+            
+            let suggestions = [];
+            
+            if (analysis.emotions.includes('anxiety')) {
+                suggestions = [
+                    "Tell me more about the anxiety",
+                    "What triggers these feelings?", 
+                    "How do you usually cope?"
+                ];
+            } else if (analysis.emotions.includes('sadness')) {
+                suggestions = [
+                    "What's contributing to the sadness?",
+                    "How long have you felt this way?",
+                    "What usually helps when you're down?"
+                ];
+            } else if (analysis.emotions.includes('loneliness')) {
+                suggestions = [
+                    "What kind of connection do you need?",
+                    "Who do you feel closest to?",
+                    "What makes you feel understood?"
+                ];
+            } else {
+                suggestions = [
+                    "Tell me more about that",
+                    "How does that make you feel?",
+                    "What's most important about this to you?"
+                ];
+            }
+            
+            suggestionsEl.innerHTML = `
+                <div class="suggestion-buttons">
+                    ${suggestions.map(s => `<button class="suggestion-btn" onclick="sendMessage('${s}')">${s}</button>`).join('')}
+                </div>
+            `;
+            
+            messagesEl?.appendChild(suggestionsEl);
+            scrollToBottom();
+        }
+
+        // Conversation Control Functions
+        function clearCurrentConversation() {
+            if (confirm('Are you sure you want to clear the current conversation? This cannot be undone.')) {
+                const messagesEl = document.getElementById('messages');
+                if (messagesEl) {
+                    messagesEl.innerHTML = '';
+                }
+                
+                messages = [];
+                conversationContext = { topics: [], emotions: [], concerns: [], followUps: [] };
+                
+                if (conversationManager.currentSession) {
+                    conversationManager.endConversation();
+                }
+                
+                // Restart with welcome message
+                setTimeout(() => {
+                    addBotMessage("Hi! I'm here to listen and support you. What's been on your mind lately?");
+                    conversationManager.startNewConversation();
+                }, 500);
+            }
+        }
+
+        function saveCurrentConversation() {
+            if (conversationManager.currentSession && conversationManager.currentSession.messages.length > 0) {
+                const mood = prompt('How would you rate your overall mood right now? (1-10, where 10 is excellent)');
+                const moodRating = mood ? parseInt(mood) : null;
+                
+                conversationManager.endConversation(moodRating);
+                
+                alert('Conversation saved! You can view it in the Progress section.');
+                updateProgressStats();
+            } else {
+                alert('No conversation to save yet. Start chatting first!');
+            }
         }
 
         function isCrisis(message) {
@@ -1021,6 +1631,308 @@ What feels most comfortable for you to try?`
                 messagesEl.scrollTop = messagesEl.scrollHeight;
             }
         }
+
+        // Progress Tracking Functions
+        function updateProgressStats() {
+            const conversations = conversationManager.conversations;
+            
+            // Calculate stats
+            const totalConversations = conversations.length;
+            const activeDays = new Set(conversations.map(c => new Date(c.startTime).toDateString())).size;
+            const moodImprovements = conversations.filter(c => c.mood && c.mood >= 7).length;
+            const currentStreak = calculateStreak(conversations);
+            
+            // Update UI
+            const updateStat = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            };
+            
+            updateStat('total-conversations', totalConversations);
+            updateStat('active-days', activeDays);
+            updateStat('mood-improvements', moodImprovements);
+            updateStat('current-streak', currentStreak);
+            
+            // Update mood chart
+            updateMoodChart(conversations);
+            
+            // Update insights
+            updateInsights(conversations);
+        }
+
+        function calculateStreak(conversations) {
+            if (conversations.length === 0) return 0;
+            
+            let streak = 0;
+            const today = new Date();
+            const conversationDates = conversations.map(c => new Date(c.startTime).toDateString());
+            
+            for (let i = 0; i < 30; i++) {
+                const checkDate = new Date(today);
+                checkDate.setDate(today.getDate() - i);
+                const checkDateStr = checkDate.toDateString();
+                
+                if (conversationDates.includes(checkDateStr)) {
+                    streak++;
+                } else if (i > 0) {
+                    break;
+                }
+            }
+            
+            return streak;
+        }
+
+        function updateMoodChart(conversations) {
+            const canvas = document.getElementById('mood-chart');
+            const noDataMessage = document.getElementById('no-data-message');
+            
+            if (!canvas) return;
+            
+            if (conversations.length === 0) {
+                noDataMessage.style.display = 'flex';
+                return;
+            }
+            
+            noDataMessage.style.display = 'none';
+            
+            const ctx = canvas.getContext('2d');
+            const moodData = conversations
+                .filter(c => c.mood)
+                .slice(-10)
+                .map(c => ({
+                    date: new Date(c.startTime).toLocaleDateString(),
+                    mood: c.mood
+                }));
+            
+            if (moodData.length === 0) {
+                noDataMessage.style.display = 'flex';
+                return;
+            }
+            
+            // Simple chart drawing
+            canvas.width = canvas.offsetWidth * 2;
+            canvas.height = canvas.offsetHeight * 2;
+            ctx.scale(2, 2);
+            
+            const width = canvas.offsetWidth;
+            const height = canvas.offsetHeight;
+            const padding = 40;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i <= 10; i++) {
+                const y = padding + (height - 2 * padding) * (1 - i / 10);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+                
+                // Y-axis labels
+                ctx.fillStyle = '#64748b';
+                ctx.font = '12px sans-serif';
+                ctx.fillText(i.toString(), 10, y + 4);
+            }
+            
+            // Draw line chart
+            if (moodData.length > 1) {
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                
+                moodData.forEach((point, index) => {
+                    const x = padding + (width - 2 * padding) * (index / (moodData.length - 1));
+                    const y = padding + (height - 2 * padding) * (1 - point.mood / 10);
+                    
+                    if (index === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                
+                ctx.stroke();
+                
+                // Draw points
+                ctx.fillStyle = '#3b82f6';
+                moodData.forEach((point, index) => {
+                    const x = padding + (width - 2 * padding) * (index / (moodData.length - 1));
+                    const y = padding + (height - 2 * padding) * (1 - point.mood / 10);
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+            }
+        }
+
+        function renderConversationHistory() {
+            const container = document.getElementById('conversation-history');
+            if (!container) return;
+            
+            const conversations = conversationManager.conversations.slice(0, 10);
+            
+            if (conversations.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <div class="text-4xl mb-2">💭</div>
+                        <p>No conversations yet. Start chatting to build your history!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = conversations.map(conv => {
+                const date = new Date(conv.startTime).toLocaleDateString();
+                const time = new Date(conv.startTime).toLocaleTimeString();
+                const messageCount = conv.messages.length;
+                const moodEmoji = conv.mood ? getMoodEmoji(conv.mood) : '❓';
+                const moodText = conv.mood ? `Mood: ${conv.mood}/10` : 'No mood rating';
+                
+                return `
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <div class="font-medium text-gray-800">${date} at ${time}</div>
+                                <div class="text-sm text-gray-600">${messageCount} messages</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl">${moodEmoji}</div>
+                                <div class="text-xs text-gray-500">${moodText}</div>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-700">
+                            "${conv.messages[0]?.text.substring(0, 100)}${conv.messages[0]?.text.length > 100 ? '...' : ''}"
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getMoodEmoji(score) {
+            if (score >= 9) return '🌟';
+            if (score >= 7) return '😊';
+            if (score >= 5) return '😐';
+            if (score >= 3) return '😔';
+            return '😢';
+        }
+
+        function updateInsights(conversations) {
+            const container = document.getElementById('insights-container');
+            if (!container) return;
+            
+            const insights = generateInsights(conversations);
+            
+            container.innerHTML = insights.map(insight => 
+                `<div class="flex items-start gap-3 p-3 bg-white/50 rounded-lg">
+                    <span class="text-purple-600 text-lg">${insight.icon}</span>
+                    <p class="text-purple-800">${insight.text}</p>
+                </div>`
+            ).join('');
+        }
+
+        function generateInsights(conversations) {
+            if (conversations.length === 0) {
+                return [{
+                    icon: '🌱',
+                    text: 'Start using the chat feature to unlock personalized insights about your mental health journey!'
+                }];
+            }
+            
+            const insights = [];
+            
+            // Frequency insights
+            if (conversations.length >= 5) {
+                insights.push({
+                    icon: '💪',
+                    text: `You've had ${conversations.length} conversations! Consistent engagement shows commitment to your wellbeing.`
+                });
+            }
+            
+            // Mood trend insights
+            const moodEntries = conversations.filter(c => c.mood).slice(0, 5);
+            if (moodEntries.length >= 3) {
+                const avgMood = moodEntries.reduce((sum, c) => sum + c.mood, 0) / moodEntries.length;
+                const recentAvg = moodEntries.slice(0, 2).reduce((sum, c) => sum + c.mood, 0) / Math.min(2, moodEntries.length);
+                
+                if (recentAvg > avgMood) {
+                    insights.push({
+                        icon: '📈',
+                        text: 'Your mood ratings show an upward trend in recent conversations - that\'s encouraging!'
+                    });
+                } else if (avgMood >= 7) {
+                    insights.push({
+                        icon: '🌟',
+                        text: 'Your average mood rating is positive! You\'re managing well overall.'
+                    });
+                }
+            }
+            
+            // Engagement insights
+            const avgMessages = conversations.reduce((sum, c) => sum + c.messages.length, 0) / conversations.length;
+            if (avgMessages > 10) {
+                insights.push({
+                    icon: '🗣️',
+                    text: 'You engage deeply in conversations, which shows you\'re actively working on your mental health.'
+                });
+            }
+            
+            // Recent activity
+            const recentDays = new Set(
+                conversations
+                    .filter(c => new Date(c.startTime) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
+                    .map(c => new Date(c.startTime).toDateString())
+            ).size;
+            
+            if (recentDays >= 3) {
+                insights.push({
+                    icon: '🔥',
+                    text: 'You\'ve been actively engaging this week - consistency is key to mental wellness!'
+                });
+            }
+            
+            return insights.length > 0 ? insights : [{
+                icon: '💭',
+                text: 'Keep having conversations to unlock more personalized insights about your journey.'
+            }];
+        }
+
+        function exportData() {
+            const data = {
+                conversations: conversationManager.conversations,
+                exportDate: new Date().toISOString(),
+                totalConversations: conversationManager.conversations.length
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mindflow-conversations-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize event listeners when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Conversation control buttons
+            const clearBtn = document.getElementById('clear-conversation');
+            const saveBtn = document.getElementById('save-conversation');
+            const exportBtn = document.getElementById('export-data');
+            
+            if (clearBtn) clearBtn.addEventListener('click', clearCurrentConversation);
+            if (saveBtn) saveBtn.addEventListener('click', saveCurrentConversation);
+            if (exportBtn) exportBtn.addEventListener('click', exportData);
+            
+            // Initialize with welcome section
+            showSection('welcome');
+        });
 
         // Initialize the app
         window.chatInitialized = false;
