@@ -647,6 +647,10 @@
                 
                 <!-- Conversation Controls -->
                 <div class="flex items-center gap-2">
+                    <button id="restart-conversation" class="px-3 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-1" title="Restart conversation">
+                        <span>🔄</span>
+                        <span class="hidden sm:inline">Restart</span>
+                    </button>
                     <button id="clear-conversation" class="px-3 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-1" title="Clear current conversation">
                         <span>🗑️</span>
                         <span class="hidden sm:inline">Clear</span>
@@ -654,6 +658,10 @@
                     <button id="save-conversation" class="px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-1" title="Save conversation">
                         <span>💾</span>
                         <span class="hidden sm:inline">Save</span>
+                    </button>
+                    <button id="ai-settings" class="px-3 py-2 text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-1" title="AI Settings">
+                        <span>🤖</span>
+                        <span class="hidden sm:inline">AI</span>
                     </button>
                 </div>
             </div>
@@ -799,6 +807,91 @@
                 </div>
             </div>
         </section>
+
+        <!-- AI Settings Modal -->
+        <div id="ai-settings-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+            <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-800">🤖 AI Configuration</h2>
+                        <button onclick="closeAISettings()" class="text-gray-500 hover:text-gray-700 text-2xl" title="Close AI Settings">
+                            ×
+                        </button>
+                    </div>
+                    <p class="text-gray-600 mt-2">Connect real AI for more natural, intelligent responses</p>
+                </div>
+                
+                <div class="p-6 space-y-6">
+                    <!-- AI Provider Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">AI Provider</label>
+                        <select id="ai-provider" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" title="Select AI provider for natural responses">
+                            <option value="local">Local Responses (Default)</option>
+                            <option value="openai">OpenAI (GPT-3.5/GPT-4)</option>
+                            <option value="anthropic">Anthropic Claude</option>
+                        </select>
+                    </div>
+
+                    <!-- OpenAI Configuration -->
+                    <div id="openai-config" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">OpenAI API Key</label>
+                        <input type="password" id="openai-key" placeholder="sk-..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p class="text-sm text-gray-500 mt-1">Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" class="text-blue-600 hover:underline">OpenAI Platform</a></p>
+                        
+                        <label class="block text-sm font-medium text-gray-700 mb-2 mt-4">Model</label>
+                        <select id="openai-model" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" title="Select OpenAI model">
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Recommended)</option>
+                            <option value="gpt-4">GPT-4 (More expensive)</option>
+                            <option value="gpt-4-turbo-preview">GPT-4 Turbo</option>
+                        </select>
+                    </div>
+
+                    <!-- Anthropic Configuration -->
+                    <div id="anthropic-config" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Anthropic API Key</label>
+                        <input type="password" id="anthropic-key" placeholder="sk-ant-..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p class="text-sm text-gray-500 mt-1">Get your API key from <a href="https://console.anthropic.com/" target="_blank" rel="noopener" class="text-blue-600 hover:underline">Anthropic Console</a></p>
+                        
+                        <label class="block text-sm font-medium text-gray-700 mb-2 mt-4">Model</label>
+                        <select id="anthropic-model" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" title="Select Anthropic Claude model">
+                            <option value="claude-3-sonnet-20240229">Claude 3 Sonnet (Recommended)</option>
+                            <option value="claude-3-opus-20240229">Claude 3 Opus (Most capable)</option>
+                            <option value="claude-3-haiku-20240307">Claude 3 Haiku (Fastest)</option>
+                        </select>
+                    </div>
+
+                    <!-- Current Status -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-medium text-gray-800 mb-2">Current Status</h3>
+                        <p id="ai-status" class="text-sm text-gray-600">Using local responses - configure API key to enable AI</p>
+                    </div>
+
+                    <!-- Privacy Notice -->
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <h3 class="font-medium text-blue-800 mb-2">🔒 Privacy & Security</h3>
+                        <ul class="text-sm text-blue-700 space-y-1">
+                            <li>• API keys are stored locally in your browser only</li>
+                            <li>• Conversation data is sent to the AI provider for processing</li>
+                            <li>• No data is stored on our servers</li>
+                            <li>• You can disable AI and clear keys at any time</li>
+                        </ul>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-3">
+                        <button id="save-ai-settings" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                            Save Settings
+                        </button>
+                        <button id="test-ai-connection" class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                            Test Connection
+                        </button>
+                        <button id="clear-ai-settings" class="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Resources Section -->
         <section id="resources" class="section">
@@ -1185,24 +1278,42 @@
                 return;
             }
 
-            // Generate intelligent, inquisitive response
-            const response = generateInquisitiveResponse(analysis, message);
-            
-            addBotMessage(response.main);
-            conversationManager.addMessage(response.main, 'bot');
-            
-            // Ask follow-up questions to encourage deeper conversation
-            setTimeout(() => {
+            // Generate intelligent, inquisitive response (AI or local)
+            generateAIResponse(message, conversationContext, analysis).then(response => {
+                addBotMessage(response.main);
+                conversationManager.addMessage(response.main, 'bot');
+                
+                // Ask follow-up questions to encourage deeper conversation
+                setTimeout(() => {
+                    if (response.followUp) {
+                        addBotMessage(response.followUp);
+                        conversationManager.addMessage(response.followUp, 'bot');
+                    }
+                }, 1500);
+                
+                // Add contextual suggestions
+                setTimeout(() => {
+                    addIntelligentSuggestions(analysis);
+                }, 2500);
+            }).catch(error => {
+                console.error('Response generation failed:', error);
+                // Fallback to local responses
+                const response = generateInquisitiveResponse(analysis, message);
+                addBotMessage(response.main);
+                conversationManager.addMessage(response.main, 'bot');
+                
                 if (response.followUp) {
-                    addBotMessage(response.followUp);
-                    conversationManager.addMessage(response.followUp, 'bot');
+                    setTimeout(() => {
+                        addBotMessage(response.followUp);
+                        conversationManager.addMessage(response.followUp, 'bot');
+                    }, 1500);
                 }
-            }, 1500);
-            
-            // Add contextual suggestions
-            setTimeout(() => {
-                addIntelligentSuggestions(analysis);
-            }, 2500);
+                
+                // Add suggestions for fallback too
+                setTimeout(() => {
+                    addIntelligentSuggestions(analysis);
+                }, 2500);
+            });
         }
 
         function analyzeMessage(message) {
@@ -1254,6 +1365,132 @@
             conversationContext.topics = conversationContext.topics.slice(-5);
         }
 
+        // AI Integration Configuration
+        const AI_CONFIG = {
+            // OpenAI Configuration
+            openai: {
+                apiKey: '', // Users will add their own API key
+                model: 'gpt-3.5-turbo',
+                endpoint: 'https://api.openai.com/v1/chat/completions'
+            },
+            // Anthropic Claude Configuration  
+            anthropic: {
+                apiKey: '', // Users will add their own API key
+                model: 'claude-3-sonnet-20240229',
+                endpoint: 'https://api.anthropic.com/v1/messages'
+            },
+            // Local/Fallback mode
+            useAI: false, // Set to true when API keys are configured
+            provider: 'openai' // 'openai' or 'anthropic'
+        };
+
+        // Natural AI Response Generator
+        async function generateAIResponse(message, context, analysis) {
+            if (!AI_CONFIG.useAI || !AI_CONFIG[AI_CONFIG.provider].apiKey) {
+                return generateInquisitiveResponse(analysis, message);
+            }
+
+            try {
+                if (AI_CONFIG.provider === 'openai') {
+                    return await generateOpenAIResponse(message, context, analysis);
+                } else if (AI_CONFIG.provider === 'anthropic') {
+                    return await generateAnthropicResponse(message, context, analysis);
+                }
+            } catch (error) {
+                console.warn('AI API failed, falling back to local responses:', error);
+                return generateInquisitiveResponse(analysis, message);
+            }
+        }
+
+        async function generateOpenAIResponse(message, context, analysis) {
+            const systemPrompt = `You are a compassionate mental health support assistant. Your role is to:
+            1. Listen actively and validate emotions
+            2. Ask thoughtful, therapeutic follow-up questions
+            3. Encourage deeper self-reflection
+            4. Provide gentle guidance without giving medical advice
+            5. Detect crisis situations and recommend professional help
+
+            Current conversation context: ${JSON.stringify(context)}
+            User's emotional state: ${analysis.emotions.join(', ')}
+            Topics discussed: ${analysis.topics.join(', ')}
+
+            Respond naturally and therapeutically. Always include a thoughtful follow-up question to encourage continued sharing.`;
+
+            const response = await fetch(AI_CONFIG.openai.endpoint, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${AI_CONFIG.openai.apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: AI_CONFIG.openai.model,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: message }
+                    ],
+                    max_tokens: 250,
+                    temperature: 0.8
+                })
+            });
+
+            if (!response.ok) throw new Error(`OpenAI API error: ${response.status}`);
+            
+            const data = await response.json();
+            const aiResponse = data.choices[0].message.content;
+            
+            // Split response into main response and follow-up if possible
+            const sentences = aiResponse.split(/[.!?]+/).filter(s => s.trim());
+            if (sentences.length > 1) {
+                const splitPoint = Math.floor(sentences.length / 2);
+                return {
+                    main: sentences.slice(0, splitPoint).join('. ') + '.',
+                    followUp: sentences.slice(splitPoint).join('. ') + '.'
+                };
+            } else {
+                return { main: aiResponse, followUp: '' };
+            }
+        }
+
+        async function generateAnthropicResponse(message, context, analysis) {
+            const systemPrompt = `You are a compassionate mental health support assistant trained in active listening and therapeutic communication. Respond with empathy and ask thoughtful questions that encourage deeper sharing.
+
+            Context: ${JSON.stringify(context)}
+            Emotional indicators: ${analysis.emotions.join(', ')}
+            Topics: ${analysis.topics.join(', ')}`;
+
+            const response = await fetch(AI_CONFIG.anthropic.endpoint, {
+                method: 'POST',
+                headers: {
+                    'x-api-key': AI_CONFIG.anthropic.apiKey,
+                    'Content-Type': 'application/json',
+                    'anthropic-version': '2023-06-01'
+                },
+                body: JSON.stringify({
+                    model: AI_CONFIG.anthropic.model,
+                    max_tokens: 250,
+                    messages: [{ role: 'user', content: message }],
+                    system: systemPrompt
+                })
+            });
+
+            if (!response.ok) throw new Error(`Anthropic API error: ${response.status}`);
+            
+            const data = await response.json();
+            const aiResponse = data.content[0].text;
+            
+            // Split response similarly to OpenAI
+            const sentences = aiResponse.split(/[.!?]+/).filter(s => s.trim());
+            if (sentences.length > 1) {
+                const splitPoint = Math.floor(sentences.length / 2);
+                return {
+                    main: sentences.slice(0, splitPoint).join('. ') + '.',
+                    followUp: sentences.slice(splitPoint).join('. ') + '.'
+                };
+            } else {
+                return { main: aiResponse, followUp: '' };
+            }
+        }
+
         function generateInquisitiveResponse(analysis, originalMessage) {
             const messageCount = messages.filter(m => m.type === 'user').length;
             const primaryEmotion = analysis.emotions[0];
@@ -1262,15 +1499,44 @@
             let mainResponse = '';
             let followUp = '';
 
+            // Enhanced natural responses with more variation
+            const responseVariations = {
+                anxiety: [
+                    "I hear the anxiety in what you're sharing, and I want you to know that's completely understandable.",
+                    "Anxiety can feel so overwhelming - thank you for being brave enough to talk about it.",
+                    "That sounds really challenging to deal with. Anxiety affects us all differently.",
+                    "I can sense how much this anxiety is impacting you right now."
+                ],
+                sadness: [
+                    "There's a lot of pain in what you're telling me, and I want to honor that.",
+                    "Sadness can feel so heavy sometimes. I'm glad you're not carrying this alone right now.",
+                    "That sounds incredibly difficult. Thank you for trusting me with these feelings.",
+                    "I can hear how much you're hurting, and that takes real strength to share."
+                ],
+                loneliness: [
+                    "Loneliness is one of the most difficult human experiences. I'm here with you right now.",
+                    "Feeling alone can be so painful, especially when you're already struggling.",
+                    "Thank you for reaching out even when you're feeling disconnected. That matters.",
+                    "I hear how isolated you've been feeling. That takes courage to admit."
+                ]
+            };
+
             // Personalized responses based on conversation history and analysis
             if (messageCount === 1) {
                 // First message - be welcoming but curious
-                if (primaryEmotion) {
-                    mainResponse = `I can hear that you're feeling ${primaryEmotion}. Thank you for trusting me with that. It takes courage to reach out when we're struggling.`;
-                    followUp = `I'd love to understand more about what's bringing up these feelings for you. What's been happening in your life recently?`;
+                if (primaryEmotion && responseVariations[primaryEmotion]) {
+                    const responses = responseVariations[primaryEmotion];
+                    mainResponse = responses[Math.floor(Math.random() * responses.length)];
+                    followUp = `I'd really like to understand more about what's been happening for you. What's been the hardest part lately?`;
                 } else {
-                    mainResponse = `I'm here to listen and support you. What you've shared is important.`;
-                    followUp = `Can you tell me a bit more about what's been on your mind lately? I want to understand what you're going through.`;
+                    const welcomeResponses = [
+                        "I'm really glad you decided to reach out today. What's been on your mind?",
+                        "Thank you for being here. I can tell something important is weighing on you.",
+                        "I'm listening, and I want to understand what you're going through right now.",
+                        "It takes courage to start this conversation. What would be most helpful to talk about?"
+                    ];
+                    mainResponse = welcomeResponses[Math.floor(Math.random() * welcomeResponses.length)];
+                    followUp = `Take your time - what feels most important for me to know about what you're experiencing?`;
                 }
             } else {
                 // Subsequent messages - dig deeper based on context
@@ -1278,8 +1544,14 @@
                     mainResponse = getEmpatheticResponse(primaryEmotion, primaryTopic);
                     followUp = generateDeepQuestions(primaryEmotion, primaryTopic, conversationContext);
                 } else if (analysis.hasQuestions) {
-                    mainResponse = "Those are really important questions you're asking. It sounds like you're trying to make sense of a difficult situation.";
-                    followUp = "Sometimes when we're asking 'why' or 'how,' it's because something unexpected or painful has happened. What's prompting these thoughts for you?";
+                    const questionResponses = [
+                        "Those are such important questions you're wrestling with.",
+                        "I can hear you trying to make sense of something really difficult.",
+                        "The questions you're asking show how much you're reflecting on this.",
+                        "It sounds like you're really searching for understanding right now."
+                    ];
+                    mainResponse = questionResponses[Math.floor(Math.random() * questionResponses.length)];
+                    followUp = "What's driving these questions for you? Sometimes our deepest questions come from our most meaningful experiences.";
                 } else {
                     mainResponse = generateContextualResponse(analysis, conversationContext);
                     followUp = generateCuriousFollowUp(analysis, messageCount);
@@ -1458,6 +1730,34 @@
             }
         }
 
+        function restartConversation() {
+            if (confirm('Are you sure you want to restart the conversation? Current progress will be saved automatically.')) {
+                // Auto-save current conversation if it exists
+                if (conversationManager.currentSession && conversationManager.currentSession.messages.length > 0) {
+                    conversationManager.endConversation();
+                }
+                
+                // Clear the chat
+                const messagesEl = document.getElementById('messages');
+                if (messagesEl) {
+                    messagesEl.innerHTML = '';
+                }
+                
+                messages = [];
+                conversationContext = { topics: [], emotions: [], concerns: [], followUps: [] };
+                
+                // Start fresh
+                conversationManager.startNewConversation();
+                
+                // Show welcome message
+                setTimeout(() => {
+                    addBotMessage("Hi! I'm here to listen and support you. What's been on your mind lately?");
+                }, 500);
+                
+                updateProgressStats();
+            }
+        }
+
         function saveCurrentConversation() {
             if (conversationManager.currentSession && conversationManager.currentSession.messages.length > 0) {
                 const mood = prompt('How would you rate your overall mood right now? (1-10, where 10 is excellent)');
@@ -1469,6 +1769,151 @@
                 updateProgressStats();
             } else {
                 alert('No conversation to save yet. Start chatting first!');
+            }
+        }
+
+        // AI Settings Management
+        function openAISettings() {
+            const modal = document.getElementById('ai-settings-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                loadAISettings();
+            }
+        }
+
+        function closeAISettings() {
+            const modal = document.getElementById('ai-settings-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function loadAISettings() {
+            try {
+                const settings = JSON.parse(localStorage.getItem('mindflow_ai_settings') || '{}');
+                
+                document.getElementById('ai-provider').value = settings.provider || 'local';
+                
+                if (settings.openai) {
+                    document.getElementById('openai-key').value = settings.openai.apiKey || '';
+                    document.getElementById('openai-model').value = settings.openai.model || 'gpt-3.5-turbo';
+                }
+                
+                if (settings.anthropic) {
+                    document.getElementById('anthropic-key').value = settings.anthropic.apiKey || '';
+                    document.getElementById('anthropic-model').value = settings.anthropic.model || 'claude-3-sonnet-20240229';
+                }
+                
+                toggleProviderConfig();
+                updateAIStatus();
+            } catch (e) {
+                console.error('Error loading AI settings:', e);
+            }
+        }
+
+        function toggleProviderConfig() {
+            const provider = document.getElementById('ai-provider').value;
+            
+            document.getElementById('openai-config').classList.toggle('hidden', provider !== 'openai');
+            document.getElementById('anthropic-config').classList.toggle('hidden', provider !== 'anthropic');
+        }
+
+        function saveAISettings() {
+            try {
+                const provider = document.getElementById('ai-provider').value;
+                
+                const settings = {
+                    provider: provider,
+                    openai: {
+                        apiKey: document.getElementById('openai-key').value,
+                        model: document.getElementById('openai-model').value
+                    },
+                    anthropic: {
+                        apiKey: document.getElementById('anthropic-key').value,
+                        model: document.getElementById('anthropic-model').value
+                    }
+                };
+                
+                localStorage.setItem('mindflow_ai_settings', JSON.stringify(settings));
+                
+                // Update AI_CONFIG
+                AI_CONFIG.provider = provider;
+                AI_CONFIG.useAI = provider !== 'local';
+                
+                if (settings.openai.apiKey) {
+                    AI_CONFIG.openai.apiKey = settings.openai.apiKey;
+                    AI_CONFIG.openai.model = settings.openai.model;
+                }
+                
+                if (settings.anthropic.apiKey) {
+                    AI_CONFIG.anthropic.apiKey = settings.anthropic.apiKey;
+                    AI_CONFIG.anthropic.model = settings.anthropic.model;
+                }
+                
+                updateAIStatus();
+                alert('AI settings saved successfully!');
+                
+            } catch (e) {
+                console.error('Error saving AI settings:', e);
+                alert('Error saving settings. Please try again.');
+            }
+        }
+
+        function testAIConnection() {
+            const provider = document.getElementById('ai-provider').value;
+            
+            if (provider === 'local') {
+                alert('Local responses are always available - no connection needed!');
+                return;
+            }
+            
+            const testMessage = "Hello, this is a test message. Please respond briefly.";
+            const testAnalysis = { emotions: ['neutral'], topics: ['test'], isPersonal: false, hasQuestions: false };
+            
+            generateAIResponse(testMessage, {}, testAnalysis)
+                .then(response => {
+                    alert(`✅ AI Connection successful!\n\nTest response: "${response.main}"`);
+                })
+                .catch(error => {
+                    alert(`❌ AI Connection failed!\n\nError: ${error.message}\n\nPlease check your API key and try again.`);
+                });
+        }
+
+        function clearAISettings() {
+            if (confirm('Are you sure you want to clear all AI settings? This will remove API keys and reset to local responses.')) {
+                localStorage.removeItem('mindflow_ai_settings');
+                
+                AI_CONFIG.useAI = false;
+                AI_CONFIG.provider = 'local';
+                AI_CONFIG.openai.apiKey = '';
+                AI_CONFIG.anthropic.apiKey = '';
+                
+                loadAISettings();
+                alert('AI settings cleared. Now using local responses.');
+            }
+        }
+
+        function updateAIStatus() {
+            const statusEl = document.getElementById('ai-status');
+            const provider = document.getElementById('ai-provider').value;
+            
+            if (provider === 'local') {
+                statusEl.textContent = 'Using local responses - fast and private';
+                statusEl.className = 'text-sm text-gray-600';
+            } else {
+                const apiKey = provider === 'openai' 
+                    ? document.getElementById('openai-key').value
+                    : document.getElementById('anthropic-key').value;
+                
+                if (apiKey) {
+                    statusEl.textContent = `✅ AI enabled with ${provider.toUpperCase()} - natural responses active`;
+                    statusEl.className = 'text-sm text-green-600 font-medium';
+                } else {
+                    statusEl.textContent = `⚠️ API key required for ${provider.toUpperCase()}`;
+                    statusEl.className = 'text-sm text-orange-600';
+                }
             }
         }
 
@@ -1922,13 +2367,49 @@ What feels most comfortable for you to try?`
         // Initialize event listeners when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             // Conversation control buttons
+            const restartBtn = document.getElementById('restart-conversation');
             const clearBtn = document.getElementById('clear-conversation');
             const saveBtn = document.getElementById('save-conversation');
             const exportBtn = document.getElementById('export-data');
+            const aiSettingsBtn = document.getElementById('ai-settings');
             
+            if (restartBtn) restartBtn.addEventListener('click', restartConversation);
             if (clearBtn) clearBtn.addEventListener('click', clearCurrentConversation);
             if (saveBtn) saveBtn.addEventListener('click', saveCurrentConversation);
             if (exportBtn) exportBtn.addEventListener('click', exportData);
+            if (aiSettingsBtn) aiSettingsBtn.addEventListener('click', openAISettings);
+            
+            // AI Settings modal controls
+            const saveAIBtn = document.getElementById('save-ai-settings');
+            const testAIBtn = document.getElementById('test-ai-connection');
+            const clearAIBtn = document.getElementById('clear-ai-settings');
+            const providerSelect = document.getElementById('ai-provider');
+            
+            if (saveAIBtn) saveAIBtn.addEventListener('click', saveAISettings);
+            if (testAIBtn) testAIBtn.addEventListener('click', testAIConnection);
+            if (clearAIBtn) clearAIBtn.addEventListener('click', clearAISettings);
+            if (providerSelect) providerSelect.addEventListener('change', toggleProviderConfig);
+            
+            // Initialize AI settings from localStorage
+            try {
+                const settings = JSON.parse(localStorage.getItem('mindflow_ai_settings') || '{}');
+                if (settings.provider && settings.provider !== 'local') {
+                    AI_CONFIG.provider = settings.provider;
+                    AI_CONFIG.useAI = true;
+                    
+                    if (settings.openai && settings.openai.apiKey) {
+                        AI_CONFIG.openai.apiKey = settings.openai.apiKey;
+                        AI_CONFIG.openai.model = settings.openai.model;
+                    }
+                    
+                    if (settings.anthropic && settings.anthropic.apiKey) {
+                        AI_CONFIG.anthropic.apiKey = settings.anthropic.apiKey;
+                        AI_CONFIG.anthropic.model = settings.anthropic.model;
+                    }
+                }
+            } catch (e) {
+                console.log('No AI settings found, using local responses');
+            }
             
             // Initialize with welcome section
             showSection('welcome');

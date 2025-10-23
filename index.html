@@ -273,14 +273,25 @@
           <span class="text-lg">Browse Resources</span>
         </a>
         
-        <button 
-          id="conversation-tracker-btn"
-          class="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 group"
-          onclick="openConversationTracker()"
-        >
-          <span class="text-xl group-hover:animate-spin" aria-hidden="true">💭</span>
-          <span class="text-lg">Track Conversations</span>
-        </button>
+        <div class="flex gap-3 w-full">
+          <button 
+            id="conversation-tracker-btn"
+            class="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 group"
+            onclick="openConversationTracker()"
+          >
+            <span class="text-xl group-hover:animate-spin" aria-hidden="true">💭</span>
+            <span class="text-lg">Track Conversations</span>
+          </button>
+          
+          <button 
+            id="restart-all-btn"
+            onclick="resetAllConversations()" 
+            class="px-4 py-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center group"
+            title="Reset all conversation data"
+          >
+            <span class="text-2xl group-hover:animate-spin" aria-hidden="true">🔄</span>
+          </button>
+        </div>
       </div>
       
       <div class="mt-6 text-sm text-slate-500 text-center" id="server-note">
@@ -683,8 +694,9 @@
       }
     }
 
-    // Initialize conversation tracker
+    // Initialize conversation tracker and context
     const conversationTracker = new ConversationTracker();
+    let conversationContext = { topics: [], emotions: [], concerns: [], followUps: [] };
 
     // Modal controls
     function openConversationTracker() {
