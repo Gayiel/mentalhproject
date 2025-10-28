@@ -11,7 +11,7 @@ class CollaborativeMentalHealthAI {
         this.humanAgentConnected = false;
         this.crisisMode = false;
         
-        // Zero-tolerance crisis detection keywords
+        // Zero-tolerance crisis detection keywords - COMPREHENSIVE list with all subtle patterns
         this.crisisKeywords = [
             'suicide', 'suicidal', 'kill myself', 'end my life', 'take my life', 'taking my life',
             'hurt myself', 'harm myself', 'cut myself', 'want to die', 'going to die',
@@ -19,7 +19,16 @@ class CollaborativeMentalHealthAI {
             'give up', 'not worth living', 'thoughts of suicide', 'thinking about suicide',
             'thinking about death', 'want to disappear', 'don\'t want to be here',
             'wish I was dead', 'can\'t cope anymore', 'no hope', 'hopeless',
-            'hurt others', 'harm someone', 'make them pay', 'violence'
+            'hurt others', 'harm someone', 'make them pay', 'violence',
+            // Subtle patterns that indicate suicidal ideation
+            'can\'t do this', 'can\'t do this anymore', 'can\'t go on', 'can\'t continue',
+            'can\'t handle', 'no way out', 'no escape', 'trapped', 'stuck forever',
+            'nobody cares', 'everyone would be better', 'everyone would be better off',
+            'everyone hates me', 'so tired', 'too tired', 'exhausted', 'no point anymore',
+            'can\'t take it', 'overwhelmed', 'worthless', 'empty', 'meaningless',
+            'nothing matters', 'no future', 'can\'t cope', 'struggling to breathe',
+            'ready to go', 'done with this', 'i\'m done', 'that\'s it i\'m', 'burden to everyone',
+            'should disappear', 'better off without me', 'world would be better'
         ];
 
         // Verified crisis services by location

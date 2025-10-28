@@ -233,83 +233,97 @@
     </button>
   </div>
 
-  <!-- Hidden Audio Element -->
-  <audio id="ambientMusic" loop preload="auto">
-    <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav">
-    <!-- Fallback to a calm nature sound -->
-    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LKdSgELIHO8tiJOAgatKrkrGMABzoZhNjywmpGExAzpODvvmgaBjoZhNjywmpGExAzpODvvmgaBjoZhNjywmpGExAzpODvvmgaAz0baOPqy2MeAzIYg9fxwmhCDBEwpODvvmcZAD8hhMjv0GsbAD8hhNjv0mccAEAdh8jov2cYAz4Zg9fxwmhCDBEwpODvvmcZAD8hhMjv0GsbAD8hhNjv0mccAEAdh8jov2cYAz4Zg9fxwmhCDBEwpODvvmcZAD8hhMjv0GsbAD8hhNjv0mccAEAdh8jov2cYAz4Zg9fxwmhCDBEwpODvvmcZAD8hhMjv0GsbAD8hhNjv0mccAEAdh8jov2cYAz4Zg9fxwmhCDBEwpODvvmcZ" />
+  <!-- Ocean Ambience Audio Element -->
+  <audio id="ambientMusic" loop preload="auto" volume="0.5">
+    <!-- High-quality ocean waves sound -->
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/24/audio_e1b0e8e915.mp3" type="audio/mpeg">
+    <!-- Fallback: Calm ocean waves (extended ambient audio) -->
+    <source src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==" type="audio/wav">
   </audio>
 
   <!-- Main Card -->
-  <div class="relative z-10 bg-white/95 backdrop-blur-xl p-8 md:p-12 rounded-3xl shadow-2xl max-w-lg mx-4 border border-white/20 animate-float">
+  <div class="relative z-10 bg-white/98 backdrop-blur-xl p-8 md:p-12 rounded-2xl shadow-2xl max-w-2xl mx-4 border border-slate-200/50">
     <div class="text-center">
-      <div class="text-3xl font-bold text-slate-700 mb-4 animate-pulse-slow">
-        🌱 MindFlow Sanctuary
+      <div class="mb-2">
+        <h1 class="text-4xl font-bold text-slate-900 mb-2">MindFlow Sanctuary</h1>
+        <div class="h-1 w-24 bg-gradient-to-r from-blue-600 to-cyan-600 mx-auto rounded-full"></div>
       </div>
-      <div class="text-slate-600 mb-8 text-lg leading-relaxed">
-        Your secure, confidential space for mental wellness
-      </div>
+      <p class="text-slate-600 mb-8 text-lg leading-relaxed max-w-md mx-auto">
+        Professional mental health support with licensed counselor oversight. Secure. Confidential. Evidence-based.
+      </p>
+      
+      <div class="space-y-3 mb-8">
         <button 
           id="enter-sanctuary-btn" 
-          class="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white font-bold py-6 px-8 rounded-2xl shadow-2xl hover:shadow-3xl border-2 border-emerald-300/30 hover:border-emerald-200/50 transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 group animate-pulse-slow relative overflow-hidden" 
+          class="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2 text-lg" 
           onclick="handleEnterSanctuary(event)"
           onkeydown="handleEnterSanctuaryKeyboard(event)"
           type="button"
-          aria-label="Enter MindFlow Sanctuary - Start your confidential mental health support session"
-          title="Click to access your secure, private mental health support space"
+          aria-label="Start your mental health support session"
+          title="Access your secure mental health support space"
         >
-          <!-- Glowing effect overlay -->
-          <div class="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-white/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <span class="text-3xl group-hover:animate-bounce relative z-10" aria-hidden="true">🌱</span>
-          <span class="text-xl font-bold relative z-10">Enter Sanctuary</span>
+          <span class="relative z-10">Start Conversation</span>
           <span id="btn-status" class="text-sm opacity-90 relative z-10" aria-live="polite"></span>
         </button>
         
+        <button 
+          id="conversation-tracker-btn"
+          class="w-full bg-slate-100 hover:bg-slate-200 text-slate-900 font-medium py-3 px-6 rounded-lg transition-all duration-200"
+          onclick="openConversationTracker()"
+        >
+          View Your Progress
+        </button>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4 mb-8 py-6 border-y border-slate-200">
+        <div>
+          <div class="text-2xl font-bold text-blue-600">24/7</div>
+          <div class="text-sm text-slate-600">Available</div>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-blue-600">100%</div>
+          <div class="text-sm text-slate-600">Confidential</div>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-blue-600">Licensed</div>
+          <div class="text-sm text-slate-600">Counselors</div>
+        </div>
+      </div>
+      
+      <div class="space-y-3">
         <a 
           href="resources.html" 
-          class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-semibold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 group"
+          class="block bg-slate-50 hover:bg-slate-100 text-slate-900 font-medium py-2 px-4 rounded-lg text-sm transition-all duration-200"
         >
-          <span class="text-xl group-hover:animate-pulse" aria-hidden="true">📚</span>
-          <span class="text-lg">Browse Resources</span>
+          Resources & Support
         </a>
         
-        <div class="flex gap-3 w-full">
-          <button 
-            id="conversation-tracker-btn"
-            class="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 group"
-            onclick="openConversationTracker()"
-          >
-            <span class="text-xl group-hover:animate-spin" aria-hidden="true">💭</span>
-            <span class="text-lg">Track Conversations</span>
-          </button>
-          
-          <button 
-            id="restart-all-btn"
-            onclick="resetAllConversations()" 
-            class="px-4 py-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center group"
-            title="Reset all conversation data"
-          >
-            <span class="text-2xl group-hover:animate-spin" aria-hidden="true">🔄</span>
-          </button>
-        </div>
+        <button 
+          id="restart-all-btn"
+          onclick="resetAllConversations()" 
+          class="w-full text-slate-600 hover:text-slate-900 font-medium py-2 px-4 rounded-lg text-sm transition-all duration-200"
+          title="Clear conversation history"
+        >
+          Clear History
+        </button>
       </div>
       
-      <div class="mt-6 text-sm text-slate-500 text-center" id="server-note">
-        <div class="flex items-center justify-center gap-2">
-          <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-          Server connected and ready
+      <div class="mt-8 pt-6 border-t border-slate-200 text-center">
+        <div class="text-sm text-slate-500 mb-4" id="server-note">
+          <div class="flex items-center justify-center gap-2">
+            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+            System ready
+          </div>
+        </div>
+        
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+          <div class="text-red-900 font-semibold mb-2">Crisis Support</div>
+          <div class="text-red-700 text-sm">
+            In crisis? Call <strong>988</strong> (Suicide & Crisis Lifeline) or <strong>911</strong>
+          </div>
         </div>
       </div>
-      
-      <div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-center">
-        <div class="text-red-700 font-semibold flex items-center justify-center gap-2">
-          <span class="text-xl">🚨</span>
-          <span>Crisis Support Available</span>
-        </div>
-        <div class="text-red-600 text-sm mt-1">
-          Call 988 (Suicide & Crisis Lifeline) or 911 for immediate help
-        </div>
-      </div>
+    </div>
     </div>
   </div>
 
@@ -378,6 +392,8 @@
   </div>
   <!-- Enhanced button styling -->
   <style>
+    /* Old button styles - DISABLED in favor of Tailwind classes */
+    /*
     .enter-sanctuary-button {
       position: relative;
       display: flex !important;
@@ -408,6 +424,7 @@
       cursor: not-allowed;
       transform: none;
     }
+    */
     
     .btn-icon {
       font-size: 1.2em;
@@ -789,10 +806,10 @@
       }
       
       if (button) {
-        button.className = `btn primary enter-sanctuary-button ${type}`;
+        button.className = `w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2 text-lg ${type}`;
         if (type === 'loading') {
           button.innerHTML = `
-            <span class="btn-icon" aria-hidden="true">🌱</span>
+            <span class="btn-icon" aria-hidden="true">⏳</span>
             <span class="btn-text">Entering...</span>
             <div class="loading-spinner" aria-hidden="true"></div>
           `;
@@ -805,11 +822,10 @@
       if (button) {
         button.disabled = false;
         button.innerHTML = `
-          <span class="btn-icon" aria-hidden="true">🌱</span>
-          <span class="btn-text">Enter Sanctuary</span>
-          <span class="btn-status" id="btn-status" aria-live="polite"></span>
+          <span class="relative z-10">Start Conversation</span>
+          <span id="btn-status" class="text-sm opacity-90 relative z-10" aria-live="polite"></span>
         `;
-        button.className = 'btn primary enter-sanctuary-button';
+        button.className = 'w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2 text-lg';
       }
       isProcessing = false;
     }

@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Mind Flow - Collaborative Mental Health Support</title>
     
+    <!-- Onboarding Styles -->
+    <link rel="stylesheet" href="css/onboarding-styles.css">
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -556,6 +559,14 @@
         <div id="crisis-shield" class="crisis-shield">
             🛡️ Crisis Protocol Active
         </div>
+        <button class="about-tool-btn" onclick="window.onboardingSystem?.showDetailedAbout()" title="Learn about this tool">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="8" cy="8" r="7"></circle>
+                <path d="M8 5.5v4"></path>
+                <circle cx="8" cy="12" r="0.5" fill="currentColor"></circle>
+            </svg>
+            About
+        </button>
     </div>
 
     <!-- Main Container -->
@@ -601,6 +612,7 @@
     </div>
 
     <!-- Enhanced Collaborative AI System -->
+    <script src="js/onboarding.js"></script>
     <script src="js/collaborative-ai-system.js"></script>
 
     <!-- Additional methods for UI interactions -->

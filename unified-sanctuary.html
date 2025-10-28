@@ -1354,8 +1354,6 @@
         <!-- Load scripts in proper order -->
         <script src="js/main.js"></script>
         <script defer src="js/accessibility.js"></script>
-        <script defer src="js/sanctuary.js"></script>
-        <script defer src="js/db-integration.js"></script>
         
         <script>
             // Enhanced Support Option Functions
@@ -1553,9 +1551,15 @@
                             suggestions: ['🤝 Connect with counselor', '💝 Self-care ideas', '🌟 Small positive steps']
                         },
                         crisis: {
-                            keywords: ['suicide', 'kill myself', 'end it all', 'want to die', 'no point', 'hurt myself'],
+                            keywords: ['suicide', 'kill myself', 'end it all', 'want to die', 'no point', 'hurt myself', 
+                                      "can't do this", "can't go on", "can't continue", "can't handle", "no reason to live", 
+                                      "not worth living", "better off dead", "ready to go", "give up", "don't want to be here",
+                                      "wish i was dead", "trapped", "stuck forever", "nobody cares", "everyone would be better",
+                                      "everyone hates me", "so tired", "too tired", "exhausted", "no point anymore",
+                                      "can't cope", "can't take it", "overwhelmed", "hopeless", "worthless", "empty",
+                                      "no escape", "no way out", "no future", "meaningless", "nothing matters"],
                             responses: [
-                                "I'm very concerned about you right now. Your life has value, and help is available immediately. Let me connect you with someone who can provide the support you need right now.",
+                                "🚨 **I'm very concerned about you right now.** Your life has value, and help is available immediately.\n\n**Immediate Crisis Support:**\n📞 **Call 988** - Suicide & Crisis Lifeline (24/7)\n💬 **Text 741741** - Crisis Text Line\n💻 **Chat at 988lifeline.org** - Online support\n🚨 **Call 911** - If in immediate danger\n\n**Let me connect you with a trained crisis counselor right now who can help you through this.** You don't have to face this alone. 💙",
                             ],
                             suggestions: ['🆘 Crisis support NOW', '🤝 Emergency counselor', '📞 Call 988']
                         },

@@ -1,0 +1,787 @@
+/* ============================================================================
+   MINDFLOW ONBOARDING SYSTEM - STYLES
+   Comprehensive styling for onboarding modals, about pages, and demo intro
+   ============================================================================ */
+
+/* ONBOARDING MODAL STYLES */
+.onboarding-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.onboarding-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.onboarding-modal.show .onboarding-overlay {
+    opacity: 1;
+}
+
+.onboarding-content {
+    position: relative;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    max-height: 90vh;
+    max-width: 700px;
+    overflow-y: auto;
+    padding: 40px;
+    transform: scale(0.95) translateY(20px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.onboarding-modal.show .onboarding-content {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.onboarding-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f1f5f9;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: #64748b;
+}
+
+.onboarding-close:hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+/* Header Section */
+.onboarding-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.onboarding-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: inline-block;
+    animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.onboarding-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.onboarding-subtitle {
+    font-size: 15px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* Section Styling */
+.onboarding-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.onboarding-section:last-of-type {
+    border-bottom: none;
+}
+
+.onboarding-section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #0d9488, #059669);
+    color: white;
+    border-radius: 50%;
+    font-weight: 600;
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+.onboarding-section p {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.onboarding-section strong {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+/* Problem Section */
+.problem-section p {
+    background: #fef3c7;
+    padding: 12px;
+    border-left: 4px solid #f59e0b;
+    border-radius: 4px;
+    color: #92400e;
+}
+
+/* Approach List */
+.approach-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.approach-item {
+    background: #f0f9ff;
+    border: 1px solid #7dd3fc;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #0369a1;
+    font-weight: 500;
+}
+
+.approach-icon {
+    font-size: 18px;
+}
+
+/* Impact Cards */
+.impact-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.impact-card {
+    background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+    border: 1px solid #86efac;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+}
+
+.impact-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #065f46;
+    margin-bottom: 8px;
+}
+
+.impact-card p {
+    font-size: 12px;
+    color: #047857;
+    line-height: 1.5;
+}
+
+/* Who Section */
+.who-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.who-item {
+    background: #f3f4f6;
+    border-left: 3px solid #3b82f6;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.6;
+}
+
+.who-item strong {
+    color: #1f2937;
+}
+
+/* Footer */
+.onboarding-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #f1f5f9;
+}
+
+.onboarding-learn-more-btn,
+.onboarding-start-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.onboarding-learn-more-btn {
+    background: white;
+    color: #0d9488;
+    border: 2px solid #0d9488;
+}
+
+.onboarding-learn-more-btn:hover {
+    background: #f0fdfa;
+}
+
+.onboarding-start-btn {
+    background: linear-gradient(135deg, #0d9488, #059669);
+    color: white;
+    border: none;
+}
+
+.onboarding-start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(13, 148, 136, 0.3);
+}
+
+/* ============================================================================
+   ABOUT THIS TOOL MODAL STYLES
+   ============================================================================ */
+
+.about-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.about-overlay.closing {
+    opacity: 0;
+}
+
+.about-overlay:not(.closing) {
+    opacity: 1;
+}
+
+.about-modal {
+    position: relative;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    max-height: 90vh;
+    max-width: 800px;
+    overflow-y: auto;
+    padding: 40px;
+}
+
+.about-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f1f5f9;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: #64748b;
+}
+
+.about-close:hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.about-content h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 32px;
+}
+
+.about-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.about-section:last-of-type {
+    border-bottom: none;
+}
+
+.about-section h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 12px;
+}
+
+.about-section p {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.7;
+    margin-bottom: 12px;
+}
+
+.about-section ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 12px;
+}
+
+.about-section li {
+    font-size: 14px;
+    color: #475569;
+    padding: 8px 0;
+    line-height: 1.6;
+}
+
+.about-section li:before {
+    content: '✓ ';
+    color: #10b981;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+/* How It Works Steps */
+.how-it-works {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.step {
+    background: #f0f9ff;
+    border-left: 4px solid #3b82f6;
+    padding: 16px;
+    border-radius: 8px;
+}
+
+.step h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0c4a6e;
+    margin-bottom: 6px;
+}
+
+.step p {
+    font-size: 13px;
+    color: #0369a1;
+    margin: 0;
+}
+
+/* Resources Grid */
+.resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.resource {
+    background: linear-gradient(135deg, #f0fdfa, #ecfdf5);
+    border: 1px solid #86efac;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.resource h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #065f46;
+    margin-bottom: 8px;
+}
+
+.resource p {
+    font-size: 12px;
+    color: #047857;
+    margin: 4px 0;
+}
+
+/* Problem Examples */
+.problem-examples {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.example {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.example-quote {
+    font-size: 14px;
+    font-weight: 600;
+    color: #92400e;
+    margin: 0 0 4px 0;
+    font-style: italic;
+}
+
+.example-note {
+    font-size: 12px;
+    color: #b45309;
+    margin: 0;
+}
+
+/* User Personas */
+.user-personas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.persona {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.persona h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.persona p {
+    font-size: 13px;
+    color: #4b5563;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* ============================================================================
+   DEMO INTRO MODAL STYLES
+   ============================================================================ */
+
+.demo-intro-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9997;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.demo-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.demo-content {
+    position: relative;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 32px;
+    max-width: 500px;
+    text-align: center;
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.demo-intro-modal.show .demo-content {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+.demo-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+}
+
+.demo-content h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.demo-content p {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 24px;
+}
+
+.demo-example {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.demo-example h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.demo-quote {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    background: white;
+    padding: 12px;
+    border-left: 4px solid #3b82f6;
+    margin-bottom: 16px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.demo-detection {
+    background: white;
+    border-left: 4px solid #dc2626;
+    padding: 12px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.detection-indicator {
+    font-size: 14px;
+    font-weight: 700;
+    color: #dc2626;
+    margin-bottom: 8px;
+}
+
+.demo-detection p {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+}
+
+.demo-continue-btn {
+    width: 100%;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #0d9488, #059669);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+}
+
+.demo-continue-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(13, 148, 136, 0.3);
+}
+
+.demo-subtitle {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* ============================================================================
+   ABOUT BUTTON STYLES
+   ============================================================================ */
+
+.about-tool-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.about-tool-btn:hover {
+    background: #e2e8f0;
+    color: #334155;
+    border-color: #94a3b8;
+}
+
+.about-tool-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+}
+
+/* ============================================================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================================================ */
+
+@media (max-width: 640px) {
+    .onboarding-content,
+    .about-modal,
+    .demo-content {
+        max-width: 90vw;
+        padding: 24px;
+        border-radius: 16px;
+    }
+
+    .onboarding-header h1,
+    .about-content h1 {
+        font-size: 24px;
+    }
+
+    .onboarding-section h2,
+    .about-section h2 {
+        font-size: 16px;
+    }
+
+    .approach-list,
+    .impact-cards,
+    .resources-grid,
+    .user-personas {
+        grid-template-columns: 1fr;
+    }
+
+    .onboarding-section p,
+    .about-section p {
+        font-size: 13px;
+    }
+
+    .demo-content {
+        max-width: 85vw;
+        padding: 24px;
+    }
+
+    .demo-content h1 {
+        font-size: 20px;
+    }
+}
+
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .onboarding-modal,
+    .onboarding-content,
+    .about-overlay,
+    .demo-intro-modal,
+    .demo-content {
+        transition: none;
+        animation: none;
+    }
+
+    .onboarding-modal.show .onboarding-content {
+        transform: none;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .onboarding-content,
+    .about-modal,
+    .demo-content {
+        border: 2px solid #000;
+    }
+
+    .approach-item,
+    .impact-card,
+    .step,
+    .resource {
+        border-width: 2px;
+    }
+}
+
+/* Scrollbar styling for modals */
+.onboarding-content::-webkit-scrollbar,
+.about-modal::-webkit-scrollbar {
+    width: 8px;
+}
+
+.onboarding-content::-webkit-scrollbar-track,
+.about-modal::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.onboarding-content::-webkit-scrollbar-thumb,
+.about-modal::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.onboarding-content::-webkit-scrollbar-thumb:hover,
+.about-modal::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
