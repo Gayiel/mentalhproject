@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - MindFlow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .admin-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .admin-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+
+        .admin-header h1 {
+            color: #1a1a2e;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .admin-header .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .security-notice {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .security-notice::before {
+            content: "🔒";
+            font-size: 20px;
+        }
+
+        .role-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .role-btn:hover {
+            border-color: #4a90e2;
+            background: #f0f7ff;
+        }
+
+        .role-btn.active {
+            border-color: #4a90e2;
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+        }
+
+        .role-btn .role-icon {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4a90e2;
+            background: #f0f7ff;
+        }
+
+        .error-message {
+            background: #ffe0e0;
+            color: #d32f2f;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(74, 144, 226, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #4a90e2;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link a:hover {
+            color: #357abd;
+            text-decoration: underline;
+        }
+
+        .admin-features {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 25px;
+        }
+
+        .admin-features h3 {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .feature-list {
+            list-style: none;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .feature-list li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .feature-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            .admin-container {
+                padding: 25px;
+            }
+
+            .admin-header h1 {
+                font-size: 24px;
+            }
+
+            .role-btn {
+                font-size: 12px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div class="admin-icon">🛡️</div>
+            <h1>Admin Access</h1>
+            <p class="subtitle">Secure Portal for System Administrators</p>
+        </div>
+
+        <div class="security-notice">
+            This portal is restricted to authorized personnel only. All access is logged and monitored.
+        </div>
+
+        <div class="role-selector">
+            <button class="role-btn active" data-role="admin">
+                <span class="role-icon">👑</span>
+                Admin
+            </button>
+            <button class="role-btn" data-role="therapist">
+                <span class="role-icon">👨‍⚕️</span>
+                Therapist
+            </button>
+            <button class="role-btn" data-role="auditor">
+                <span class="role-icon">📊</span>
+                Auditor
+            </button>
+        </div>
+
+        <div id="error-message" class="error-message"></div>
+
+        <form id="admin-login-form">
+            <div class="form-group">
+                <label for="admin-email">Email Address</label>
+                <input type="email" id="admin-email" placeholder="admin@mindflow.local" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label for="admin-password">Password</label>
+                <input type="password" id="admin-password" placeholder="Enter your secure password" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="login-btn">🔓 Secure Login</button>
+        </form>
+
+        <div class="admin-features" id="role-features">
+            <h3>Admin Capabilities:</h3>
+            <ul class="feature-list">
+                <li>User management and role assignment</li>
+                <li>System configuration and settings</li>
+                <li>Complete audit log access</li>
+                <li>Crisis alert monitoring</li>
+                <li>Data export and compliance reports</li>
+            </ul>
+        </div>
+
+        <div class="back-link">
+            <a href="login.html">← Back to User Login</a>
+        </div>
+    </div>
+
+    <script src="js/auth-system.js"></script>
+    <script>
+        // Role selection
+        const roleButtons = document.querySelectorAll('.role-btn');
+        const roleFeatures = document.getElementById('role-features');
+        let selectedRole = 'admin';
+
+        const roleDescriptions = {
+            admin: {
+                title: 'Admin Capabilities:',
+                features: [
+                    'User management and role assignment',
+                    'System configuration and settings',
+                    'Complete audit log access',
+                    'Crisis alert monitoring',
+                    'Data export and compliance reports'
+                ]
+            },
+            therapist: {
+                title: 'Therapist Capabilities:',
+                features: [
+                    'Client case management',
+                    'Crisis alert notifications',
+                    'Resource library updates',
+                    'Session notes and documentation',
+                    'Client communication tools'
+                ]
+            },
+            auditor: {
+                title: 'Auditor Capabilities:',
+                features: [
+                    'Read-only audit log access',
+                    'Compliance report generation',
+                    'User activity monitoring',
+                    'Data export for analysis',
+                    'Security event tracking'
+                ]
+            }
+        };
+
+        roleButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                roleButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedRole = btn.dataset.role;
+                updateRoleFeatures(selectedRole);
+            });
+        });
+
+        function updateRoleFeatures(role) {
+            const desc = roleDescriptions[role];
+            roleFeatures.innerHTML = `
+                <h3>${desc.title}</h3>
+                <ul class="feature-list">
+                    ${desc.features.map(f => `<li>${f}</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        // Admin login form handler
+        const loginForm = document.getElementById('admin-login-form');
+        const errorMessage = document.getElementById('error-message');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+
+            // Clear previous errors
+            errorMessage.classList.remove('show');
+
+            // Attempt login
+            const result = await window.authSystem.login(email, password);
+
+            if (result.success) {
+                const user = result.user;
+
+                // Check if user has the selected role
+                if (user.role !== selectedRole) {
+                    showError(`Access denied. This account does not have ${selectedRole} privileges.`);
+                    window.authSystem.logout();
+                    return;
+                }
+
+                // Redirect based on role
+                const portal = window.authSystem.getPortalUrl();
+                window.location.href = portal;
+            } else {
+                showError(result.error || 'Invalid credentials. Please try again.');
+            }
+        });
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+        }
+
+        // Check if already logged in
+        if (window.authSystem.isAuthenticated()) {
+            const user = window.authSystem.getCurrentUser();
+            // If already logged in, redirect to appropriate portal
+            if (user.role === 'admin' || user.role === 'therapist' || user.role === 'auditor') {
+                window.location.href = window.authSystem.getPortalUrl();
+            }
+        }
+    </script>
+</body>
+</html>

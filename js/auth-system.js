@@ -102,7 +102,7 @@ class AuthenticationSystem {
     /**
      * Register new user
      */
-    async register(email, password, fullName) {
+    async register(email, password, fullName, role = 'user') {
         // Validation
         if (!this.validateEmail(email)) {
             return { success: false, error: 'Invalid email address' };
@@ -112,6 +112,12 @@ class AuthenticationSystem {
         }
         if (!fullName || fullName.trim().length < 2) {
             return { success: false, error: 'Full name is required' };
+        }
+
+        // Validate role
+        const validRoles = ['user', 'therapist', 'auditor', 'admin'];
+        if (!validRoles.includes(role)) {
+            return { success: false, error: 'Invalid role specified' };
         }
 
         // Check if user exists
@@ -129,6 +135,8 @@ class AuthenticationSystem {
             email,
             name: fullName,
             password: hashedPassword,
+            role: role,
+            permissions: this.getRolePermissions(role),
             createdAt: new Date().toISOString(),
             lastLogin: null,
             sessionToken: null,
@@ -566,6 +574,171 @@ class AuthenticationSystem {
      */
     getCurrentUser() {
         return this.currentUser;
+    }
+
+    /**
+     * Get role-based permissions
+     */
+    getRolePermissions(role) {
+        const permissions = {
+            admin: {
+                canViewAllUsers: true,
+                canEditUsers: true,
+                canDeleteUsers: true,
+                canViewAuditLogs: true,
+                canManageRoles: true,
+                canAccessAdminPanel: true,
+                canViewCrisisAlerts: true,
+                canManageResources: true,
+                canExportData: true,
+                canConfigureSystem: true
+            },
+            therapist: {
+                canViewAllUsers: false,
+                canEditUsers: false,
+                canDeleteUsers: false,
+                canViewAuditLogs: false,
+                canManageRoles: false,
+                canAccessAdminPanel: false,
+                canViewCrisisAlerts: true,
+                canManageResources: true,
+                canExportData: false,
+                canConfigureSystem: false,
+                canViewAssignedClients: true,
+                canUpdateClientNotes: true,
+                canAccessTherapistPortal: true
+            },
+            auditor: {
+                canViewAllUsers: true,
+                canEditUsers: false,
+                canDeleteUsers: false,
+                canViewAuditLogs: true,
+                canManageRoles: false,
+                canAccessAdminPanel: false,
+                canViewCrisisAlerts: true,
+                canManageResources: false,
+                canExportData: true,
+                canConfigureSystem: false,
+                canAccessAuditorPortal: true,
+                canGenerateReports: true
+            },
+            user: {
+                canViewAllUsers: false,
+                canEditUsers: false,
+                canDeleteUsers: false,
+                canViewAuditLogs: false,
+                canManageRoles: false,
+                canAccessAdminPanel: false,
+                canViewCrisisAlerts: false,
+                canManageResources: false,
+                canExportData: false,
+                canConfigureSystem: false,
+                canAccessUserApp: true,
+                canChatWithAI: true
+            }
+        };
+
+        return permissions[role] || permissions.user;
+    }
+
+    /**
+     * Check if current user has specific permission
+     */
+    hasPermission(permission) {
+        if (!this.currentUser || !this.currentUser.permissions) {
+            return false;
+        }
+        return this.currentUser.permissions[permission] === true;
+    }
+
+    /**
+     * Check if current user has specific role
+     */
+    hasRole(role) {
+        if (!this.currentUser) {
+            return false;
+        }
+        return this.currentUser.role === role;
+    }
+
+    /**
+     * Get all users (admin only)
+     */
+    getAllUsersDetailed() {
+        if (!this.hasPermission('canViewAllUsers')) {
+            return { success: false, error: 'Unauthorized: Admin or Auditor access required' };
+        }
+
+        const userIndex = JSON.parse(
+            localStorage.getItem(`${this.storagePrefix}users`) || '[]'
+        );
+
+        const users = userIndex.map(userId => {
+            const userData = localStorage.getItem(`${this.storagePrefix}user_${userId}`);
+            if (userData) {
+                const user = JSON.parse(userData);
+                // Decrypt password hash if needed (for password reset)
+                if (user.password && user.password.includes(':')) {
+                    user.passwordHash = this.decrypt(user.password);
+                }
+                delete user.password; // Never expose password
+                return user;
+            }
+            return null;
+        }).filter(u => u !== null);
+
+        return { success: true, users };
+    }
+
+    /**
+     * Update user role (admin only)
+     */
+    async updateUserRole(userId, newRole) {
+        if (!this.hasPermission('canManageRoles')) {
+            return { success: false, error: 'Unauthorized: Admin access required' };
+        }
+
+        const validRoles = ['user', 'therapist', 'auditor', 'admin'];
+        if (!validRoles.includes(newRole)) {
+            return { success: false, error: 'Invalid role specified' };
+        }
+
+        const userData = localStorage.getItem(`${this.storagePrefix}user_${userId}`);
+        if (!userData) {
+            return { success: false, error: 'User not found' };
+        }
+
+        const user = JSON.parse(userData);
+        user.role = newRole;
+        user.permissions = this.getRolePermissions(newRole);
+
+        localStorage.setItem(`${this.storagePrefix}user_${userId}`, JSON.stringify(user));
+
+        this.logAudit('role_updated', {
+            targetUserId: userId,
+            newRole: newRole,
+            updatedBy: this.currentUser?.id
+        });
+
+        return { success: true, message: 'User role updated successfully' };
+    }
+
+    /**
+     * Get portal URL based on user role
+     */
+    getPortalUrl() {
+        if (!this.currentUser) {
+            return 'login.html';
+        }
+
+        const rolePortals = {
+            admin: 'admin-dashboard.html',
+            therapist: 'therapist-portal.html',
+            auditor: 'auditor-portal.html',
+            user: 'collaborative-mental-health.html'
+        };
+
+        return rolePortals[this.currentUser.role] || 'collaborative-mental-health.html';
     }
 }
 

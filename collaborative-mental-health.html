@@ -644,8 +644,15 @@
                 return;
             }
 
-            // Load user profile
+            // Check if user has regular user role
             const currentUser = window.authSystem.getCurrentUser();
+            if (currentUser && currentUser.role !== 'user') {
+                // Redirect to appropriate portal if not a regular user
+                window.location.href = window.authSystem.getPortalUrl();
+                return;
+            }
+
+            // Load user profile
             if (currentUser) {
                 document.getElementById('user-name').textContent = `👤 ${currentUser.name}`;
             }

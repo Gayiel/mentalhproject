@@ -658,9 +658,10 @@
                     successEl.textContent = 'Login successful! Redirecting...';
                     successEl.classList.add('show');
 
-                    // Redirect
+                    // Redirect based on user role
                     setTimeout(() => {
-                        window.location.href = 'collaborative-mental-health.html';
+                        const portalUrl = window.authSystem.getPortalUrl();
+                        window.location.href = portalUrl;
                     }, 1000);
                 } else {
                     showError('login-email', result.error);
