@@ -330,6 +330,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="css/portal-styles.css">
 </head>
 <body>
     <div class="header">
@@ -340,7 +341,7 @@
                 <p id="therapist-welcome">Welcome back, Therapist</p>
             </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 15px;">
+        <div class="row align-center gap-15">
             <span class="therapist-badge">THERAPIST</span>
             <button class="logout-btn" onclick="handleLogout()">🚪 Logout</button>
         </div>
@@ -356,7 +357,7 @@
     <div class="content">
         <!-- Dashboard Section -->
         <div id="dashboard-section" class="content-section active">
-            <div id="crisis-banner" style="display: none;">
+            <div id="crisis-banner">
                 <div class="alert-banner">
                     <div class="alert-icon">🚨</div>
                     <div class="alert-content">
@@ -388,7 +389,7 @@
 
             <h2 class="section-title">Today's Schedule</h2>
             <div class="card">
-                <p style="color: #666; text-align: center; padding: 40px;">No scheduled sessions for today</p>
+                <p class="text-secondary center-40">No scheduled sessions for today</p>
             </div>
         </div>
 
@@ -397,7 +398,7 @@
             <h2 class="section-title">My Clients</h2>
             <div id="clients-list">
                 <div class="card">
-                    <p style="color: #666; text-align: center; padding: 40px;">No clients assigned yet</p>
+                    <p class="text-secondary center-40">No clients assigned yet</p>
                 </div>
             </div>
         </div>
@@ -406,10 +407,10 @@
         <div id="crisis-section" class="content-section">
             <h2 class="section-title">Crisis Alert Management</h2>
             <div class="card">
-                <div style="text-align: center; padding: 60px 20px;">
-                    <div style="font-size: 64px; margin-bottom: 15px;">✅</div>
-                    <p style="color: #999;">No active crisis alerts</p>
-                    <p style="color: #666; font-size: 13px; margin-top: 10px;">You'll be notified when a client needs immediate attention</p>
+                <div class="center-pad">
+                    <div class="icon-64">✅</div>
+                    <p class="text-light">No active crisis alerts</p>
+                    <p class="text-small">You'll be notified when a client needs immediate attention</p>
                 </div>
             </div>
         </div>

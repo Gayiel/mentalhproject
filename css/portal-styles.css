@@ -1,0 +1,45 @@
+/* Utility and shared styles extracted from inline attributes */
+
+/* Layout helpers */
+.row { display: flex; }
+.align-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-15 { gap: 15px; }
+
+/* Text & spacing */
+.user-name { font-size: 13px; color: #64748b; font-weight: 500; }
+.help-text { color: #64748b; font-size: 13px; margin: 16px 0; }
+.text-secondary { color: #666; }
+.text-light { color: #999; }
+.text-small { color: #666; font-size: 13px; margin-top: 10px; }
+.font-13 { font-size: 13px; }
+.no-margin { margin: 0; }
+.mt-24 { margin-top: 24px; }
+.mb-20 { margin-bottom: 20px; }
+.center-pad { text-align: center; padding: 60px 20px; }
+.pad-40 { padding: 40px; }
+
+/* Buttons */
+.btn { padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
+.btn-muted { background: #f1f5f9; border-color: #e2e8f0; color: #334155; }
+.btn-warning { background: #fef3c7; border-color: #fcd34d; color: #92400e; font-weight: 500; }
+
+/* Panels & tables */
+.panel { background: white; padding: 30px; border-radius: 15px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.table-loading { text-align: center; padding: 40px; color: #999; }
+.icon-64 { font-size: 64px; margin-bottom: 15px; }
+
+/* Initial hidden states formerly inline */
+#reset-token-section,
+#new-password-section,
+#confirm-password-section,
+#confirm-reset-btn {
+  display: none;
+}
+
+/* Specific components */
+#crisis-banner { display: none; }
+.center-40 { text-align: center; padding: 40px; }

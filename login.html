@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>MindFlow - Secure Login</title>
     
+    <link rel="stylesheet" href="css/portal-styles.css">
     <style>
         * {
             margin: 0;
@@ -523,14 +524,14 @@
                         <div class="error-message" id="reset-email-error"></div>
                     </div>
 
-                    <p style="color: #64748b; font-size: 13px; margin: 16px 0;">
+                    <p class="help-text">
                         Enter your email address and we'll send you a password reset link (in demo mode, the token will be displayed here).
                     </p>
 
                     <button type="submit" class="submit-btn" id="reset-btn">Send Reset Link</button>
 
                     <!-- Reset Token Input (Demo Mode) -->
-                    <div class="form-group" style="margin-top: 24px; display: none;" id="reset-token-section">
+                    <div class="form-group mt-24" id="reset-token-section">
                         <label class="form-label">Reset Token</label>
                         <input 
                             type="text" 
@@ -541,7 +542,7 @@
                         >
                     </div>
 
-                    <div class="form-group" style="display: none;" id="new-password-section">
+                    <div class="form-group" id="new-password-section">
                         <label class="form-label">New Password</label>
                         <input 
                             type="password" 
@@ -558,7 +559,7 @@
                         <div class="error-message" id="reset-new-password-error"></div>
                     </div>
 
-                    <div class="form-group" style="display: none;" id="confirm-password-section">
+                    <div class="form-group" id="confirm-password-section">
                         <label class="form-label">Confirm Password</label>
                         <input 
                             type="password" 
@@ -569,7 +570,7 @@
                         <div class="error-message" id="reset-confirm-password-error"></div>
                     </div>
 
-                    <button type="button" class="submit-btn" id="confirm-reset-btn" style="display: none;" 
+            <button type="button" class="submit-btn" id="confirm-reset-btn"
                             onclick="confirmPasswordReset()">Reset Password</button>
                 </form>
             </div>

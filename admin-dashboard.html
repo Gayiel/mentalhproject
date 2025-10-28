@@ -468,6 +468,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="css/portal-styles.css">
 </head>
 <body>
     <div class="dashboard-header">
@@ -546,7 +547,7 @@
                     </thead>
                     <tbody id="recent-activity">
                         <tr>
-                            <td colspan="4" style="text-align: center; padding: 40px; color: #999;">Loading activity...</td>
+                            <td colspan="4" class="table-loading">Loading activity...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -555,8 +556,8 @@
 
         <!-- Users Section -->
         <div id="users-section" class="content-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 class="section-title" style="margin: 0;">User Management</h2>
+            <div class="section-header">
+                <h2 class="section-title no-margin">User Management</h2>
                 <button class="action-btn btn-edit" onclick="showCreateUserModal()">➕ Create User</button>
             </div>
 
@@ -574,7 +575,7 @@
                     </thead>
                     <tbody id="users-table">
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 40px; color: #999;">Loading users...</td>
+                            <td colspan="6" class="table-loading">Loading users...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -607,7 +608,7 @@
                     </thead>
                     <tbody id="audit-table">
                         <tr>
-                            <td colspan="4" style="text-align: center; padding: 40px; color: #999;">Loading audit logs...</td>
+                            <td colspan="4" class="table-loading">Loading audit logs...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -617,8 +618,8 @@
         <!-- Settings Section -->
         <div id="settings-section" class="content-section">
             <h2 class="section-title">System Settings</h2>
-            <div style="background: white; padding: 30px; border-radius: 15px;">
-                <p style="color: #666; margin-bottom: 20px;">Configure system-wide settings and preferences.</p>
+            <div class="panel">
+                <p class="text-secondary mb-20">Configure system-wide settings and preferences.</p>
                 <div class="form-group">
                     <label>Session Timeout (minutes)</label>
                     <input type="number" value="60" min="15" max="480">

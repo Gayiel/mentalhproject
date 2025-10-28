@@ -15,6 +15,8 @@
     
     <!-- Onboarding Styles -->
     <link rel="stylesheet" href="css/onboarding-styles.css">
+    <!-- Extracted utility styles -->
+    <link rel="stylesheet" href="css/portal-styles.css">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -567,7 +569,7 @@
         <div id="crisis-shield" class="crisis-shield">
             🛡️ Crisis Protocol Active
         </div>
-        <div style="display: flex; gap: 12px; align-items: center;">
+        <div class="row gap-12 align-center">
             <button class="about-tool-btn" onclick="window.onboardingSystem?.showDetailedAbout()" title="Learn about this tool">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
                     <circle cx="8" cy="8" r="7"></circle>
@@ -576,10 +578,10 @@
                 </svg>
                 About
             </button>
-            <div id="user-profile-section" style="display: flex; gap: 8px; align-items: center;">
-                <span id="user-name" style="font-size: 13px; color: #64748b; font-weight: 500;"></span>
-                <button onclick="showUserMenu()" style="background: #f1f5f9; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.2s;" title="User menu">⚙️</button>
-                <button onclick="handleLogout()" style="background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500; transition: all 0.2s;" title="Logout">Logout</button>
+            <div id="user-profile-section" class="row gap-8 align-center">
+                <span id="user-name" class="user-name"></span>
+                <button onclick="showUserMenu()" class="btn btn-muted" title="User menu">⚙️</button>
+                <button onclick="handleLogout()" class="btn btn-warning" title="Logout">Logout</button>
             </div>
         </div>
     </div>
