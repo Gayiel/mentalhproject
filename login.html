@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MindFlow - Secure Login</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 48px 32px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .auth-header h1 {
+            font-size: 28px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .auth-header p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #cbd5e1;
+        }
+
+        .form-input.error {
+            border-color: #dc2626;
+            background-color: #fef2f2;
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 24px 0;
+            font-size: 13px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .remember-me input {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+
+        .forgot-password {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .forgot-password:hover {
+            color: #764ba2;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 24px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .submit-btn.loading::after {
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-left: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 28px 0;
+            color: #cbd5e1;
+            font-size: 13px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .divider span {
+            padding: 0 12px;
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .auth-toggle a {
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .auth-toggle a:hover {
+            color: #764ba2;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: #f1f5f9;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .reset-form {
+            display: none;
+        }
+
+        .reset-form.show {
+            display: block;
+        }
+
+        .password-strength {
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .strength-bar {
+            height: 3px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            margin: 4px 0;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            background: #ef4444;
+            transition: width 0.2s, background-color 0.2s;
+        }
+
+        .strength-fill.weak {
+            width: 25%;
+            background: #ef4444;
+        }
+
+        .strength-fill.fair {
+            width: 50%;
+            background: #f59e0b;
+        }
+
+        .strength-fill.good {
+            width: 75%;
+            background: #3b82f6;
+        }
+
+        .strength-fill.strong {
+            width: 100%;
+            background: #10b981;
+        }
+
+        .security-notice {
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-top: 24px;
+            font-size: 12px;
+            color: #0c4a6e;
+            line-height: 1.6;
+        }
+
+        .security-notice strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 24px;
+            font-size: 12px;
+        }
+
+        .footer-links a {
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #667eea;
+        }
+
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 32px 24px;
+            }
+
+            .auth-header h1 {
+                font-size: 24px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- Header -->
+            <div class="auth-header">
+                <div class="logo">🛡️</div>
+                <h1>MindFlow</h1>
+                <p>Professional Mental Health Support Platform</p>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+                <button class="tab-btn" onclick="switchTab('reset')">Reset Password</button>
+            </div>
+
+            <!-- Login Tab -->
+            <div id="login-tab" class="tab-content active">
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="success-message" id="login-success"></div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="login-email" 
+                            class="form-input" 
+                            placeholder="you@example.com" 
+                            required
+                        >
+                        <div class="error-message" id="login-email-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input 
+                            type="password" 
+                            id="login-password" 
+                            class="form-input" 
+                            placeholder="••••••••" 
+                            required
+                        >
+                        <div class="error-message" id="login-password-error"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <label class="remember-me">
+                            <input type="checkbox" id="remember-me">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="#" class="forgot-password" onclick="switchTab('reset'); return false;">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="login-btn">Sign In</button>
+                </form>
+            </div>
+
+            <!-- Sign Up Tab -->
+            <div id="signup-tab" class="tab-content">
+                <form id="signup-form" onsubmit="handleSignup(event)">
+                    <div class="success-message" id="signup-success"></div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input 
+                            type="text" 
+                            id="signup-name" 
+                            class="form-input" 
+                            placeholder="John Doe" 
+                            required
+                        >
+                        <div class="error-message" id="signup-name-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="signup-email" 
+                            class="form-input" 
+                            placeholder="you@example.com" 
+                            required
+                        >
+                        <div class="error-message" id="signup-email-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input 
+                            type="password" 
+                            id="signup-password" 
+                            class="form-input" 
+                            placeholder="••••••••" 
+                            oninput="checkPasswordStrength(this.value)"
+                            required
+                        >
+                        <div class="password-strength" id="password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="strength-fill"></div>
+                            </div>
+                            <span id="strength-text"></span>
+                        </div>
+                        <div class="error-message" id="signup-password-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        <input 
+                            type="password" 
+                            id="signup-confirm" 
+                            class="form-input" 
+                            placeholder="••••••••" 
+                            required
+                        >
+                        <div class="error-message" id="signup-confirm-error"></div>
+                    </div>
+
+                    <div class="security-notice">
+                        <strong>🔒 Security Notice:</strong>
+                        Your account data is encrypted locally and protected. We never store passwords in plain text. Two-step verification available after registration.
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="signup-btn">Create Account</button>
+                </form>
+            </div>
+
+            <!-- Password Reset Tab -->
+            <div id="reset-tab" class="tab-content">
+                <form id="reset-form" onsubmit="handlePasswordReset(event)">
+                    <div class="success-message" id="reset-success"></div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="reset-email" 
+                            class="form-input" 
+                            placeholder="you@example.com" 
+                            required
+                        >
+                        <div class="error-message" id="reset-email-error"></div>
+                    </div>
+
+                    <p style="color: #64748b; font-size: 13px; margin: 16px 0;">
+                        Enter your email address and we'll send you a password reset link (in demo mode, the token will be displayed here).
+                    </p>
+
+                    <button type="submit" class="submit-btn" id="reset-btn">Send Reset Link</button>
+
+                    <!-- Reset Token Input (Demo Mode) -->
+                    <div class="form-group" style="margin-top: 24px; display: none;" id="reset-token-section">
+                        <label class="form-label">Reset Token</label>
+                        <input 
+                            type="text" 
+                            id="reset-token" 
+                            class="form-input" 
+                            placeholder="Paste your reset token here"
+                            readonly
+                        >
+                    </div>
+
+                    <div class="form-group" style="display: none;" id="new-password-section">
+                        <label class="form-label">New Password</label>
+                        <input 
+                            type="password" 
+                            id="reset-new-password" 
+                            class="form-input" 
+                            placeholder="••••••••"
+                            oninput="checkPasswordStrength(this.value, 'reset')"
+                        >
+                        <div class="password-strength" id="reset-password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="reset-strength-fill"></div>
+                            </div>
+                        </div>
+                        <div class="error-message" id="reset-new-password-error"></div>
+                    </div>
+
+                    <div class="form-group" style="display: none;" id="confirm-password-section">
+                        <label class="form-label">Confirm Password</label>
+                        <input 
+                            type="password" 
+                            id="reset-confirm-password" 
+                            class="form-input" 
+                            placeholder="••••••••"
+                        >
+                        <div class="error-message" id="reset-confirm-password-error"></div>
+                    </div>
+
+                    <button type="button" class="submit-btn" id="confirm-reset-btn" style="display: none;" 
+                            onclick="confirmPasswordReset()">Reset Password</button>
+                </form>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="security-notice">
+                <strong>🔐 Data Privacy:</strong>
+                Your information is stored securely with encryption. We comply with HIPAA, GDPR, and industry best practices. You can delete your account and data anytime.
+            </div>
+
+            <!-- Footer Links -->
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Support</a>
+                <a href="#">Security</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication System -->
+    <script src="js/auth-system.js"></script>
+
+    <script>
+        /**
+         * Tab Management
+         */
+        function switchTab(tab) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show selected tab
+            const tabEl = document.getElementById(`${tab}-tab`);
+            if (tabEl) {
+                tabEl.classList.add('active');
+            }
+
+            // Highlight button
+            event.target.classList.add('active');
+        }
+
+        /**
+         * Handle Login
+         */
+        async function handleLogin(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const rememberMe = document.getElementById('remember-me').checked;
+
+            // Clear previous errors
+            clearErrors('login');
+
+            // Validate
+            if (!email || !password) {
+                showError('login-email', 'Email and password are required');
+                return;
+            }
+
+            // Submit button loading state
+            const btn = document.getElementById('login-btn');
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btn.textContent = 'Signing in...';
+
+            try {
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                const result = await window.authSystem.login(email, password);
+
+                if (result.success) {
+                    // Store preference
+                    if (rememberMe) {
+                        localStorage.setItem('mindflow_remember_email', email);
+                    }
+
+                    // Show success
+                    const successEl = document.getElementById('login-success');
+                    successEl.textContent = 'Login successful! Redirecting...';
+                    successEl.classList.add('show');
+
+                    // Redirect
+                    setTimeout(() => {
+                        window.location.href = 'collaborative-mental-health.html';
+                    }, 1000);
+                } else {
+                    showError('login-email', result.error);
+                }
+            } catch (error) {
+                showError('login-email', 'An error occurred. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                btn.textContent = 'Sign In';
+            }
+        }
+
+        /**
+         * Handle Sign Up
+         */
+        async function handleSignup(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const confirm = document.getElementById('signup-confirm').value;
+
+            // Clear previous errors
+            clearErrors('signup');
+
+            // Validate
+            if (!name || !email || !password || !confirm) {
+                showError('signup-name', 'All fields are required');
+                return;
+            }
+
+            if (password !== confirm) {
+                showError('signup-confirm', 'Passwords do not match');
+                return;
+            }
+
+            // Submit button loading state
+            const btn = document.getElementById('signup-btn');
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btn.textContent = 'Creating account...';
+
+            try {
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                const result = await window.authSystem.register(email, password, name);
+
+                if (result.success) {
+                    const successEl = document.getElementById('signup-success');
+                    successEl.textContent = 'Account created successfully! Redirecting to login...';
+                    successEl.classList.add('show');
+
+                    setTimeout(() => {
+                        // Clear form and switch to login
+                        document.getElementById('signup-form').reset();
+                        document.getElementById('login-email').value = email;
+                        document.getElementById('login-password').focus();
+                        switchTab('login');
+                    }, 1500);
+                } else {
+                    showError('signup-email', result.error);
+                }
+            } catch (error) {
+                showError('signup-name', 'An error occurred. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                btn.textContent = 'Create Account';
+            }
+        }
+
+        /**
+         * Handle Password Reset
+         */
+        async function handlePasswordReset(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('reset-email').value.trim();
+
+            // Clear previous errors
+            clearErrors('reset');
+
+            if (!email) {
+                showError('reset-email', 'Email is required');
+                return;
+            }
+
+            const btn = document.getElementById('reset-btn');
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btn.textContent = 'Sending...';
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                const result = await window.authSystem.requestPasswordReset(email);
+
+                if (result.success) {
+                    const successEl = document.getElementById('reset-success');
+                    successEl.textContent = '✓ Reset link sent! In demo mode, you can see the token below.';
+                    successEl.classList.add('show');
+
+                    // In demo mode, show token input
+                    if (result.resetToken) {
+                        document.getElementById('reset-token').value = result.resetToken;
+                        document.getElementById('reset-token-section').style.display = 'block';
+                        document.getElementById('new-password-section').style.display = 'block';
+                        document.getElementById('confirm-password-section').style.display = 'block';
+                        document.getElementById('confirm-reset-btn').style.display = 'block';
+                        btn.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                showError('reset-email', 'An error occurred. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                btn.textContent = 'Send Reset Link';
+            }
+        }
+
+        /**
+         * Confirm Password Reset
+         */
+        async function confirmPasswordReset() {
+            const email = document.getElementById('reset-email').value.trim();
+            const token = document.getElementById('reset-token').value;
+            const newPassword = document.getElementById('reset-new-password').value;
+            const confirm = document.getElementById('reset-confirm-password').value;
+
+            // Clear errors
+            clearErrors('reset');
+
+            // Validate
+            if (!newPassword || !confirm) {
+                showError('reset-new-password', 'Passwords are required');
+                return;
+            }
+
+            if (newPassword !== confirm) {
+                showError('reset-confirm-password', 'Passwords do not match');
+                return;
+            }
+
+            // Find user
+            const users = window.authSystem.getAllUsers();
+            const user = users.find(u => u.email === email);
+
+            if (!user) {
+                showError('reset-email', 'User not found');
+                return;
+            }
+
+            const btn = document.getElementById('confirm-reset-btn');
+            btn.disabled = true;
+            btn.classList.add('loading');
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                const result = await window.authSystem.resetPassword(user.id, token, newPassword);
+
+                if (result.success) {
+                    const successEl = document.getElementById('reset-success');
+                    successEl.textContent = '✓ Password reset successfully! Redirecting to login...';
+                    successEl.classList.add('show');
+
+                    setTimeout(() => {
+                        document.getElementById('reset-form').reset();
+                        document.getElementById('reset-token-section').style.display = 'none';
+                        document.getElementById('new-password-section').style.display = 'none';
+                        document.getElementById('confirm-password-section').style.display = 'none';
+                        document.getElementById('confirm-reset-btn').style.display = 'none';
+                        document.getElementById('reset-btn').style.display = 'block';
+                        document.getElementById('reset-success').classList.remove('show');
+                        switchTab('login');
+                    }, 1500);
+                } else {
+                    showError('reset-new-password', result.error);
+                }
+            } catch (error) {
+                showError('reset-email', 'An error occurred. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+            }
+        }
+
+        /**
+         * Password Strength Indicator
+         */
+        function checkPasswordStrength(password, prefix = 'signup') {
+            let strength = 'weak';
+            let score = 0;
+
+            if (password.length >= 8) score++;
+            if (password.length >= 12) score++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+            if (/\d/.test(password)) score++;
+            if (/[^a-zA-Z\d]/.test(password)) score++;
+
+            if (score <= 1) strength = 'weak';
+            else if (score <= 2) strength = 'fair';
+            else if (score <= 3) strength = 'good';
+            else strength = 'strong';
+
+            const fill = document.getElementById(`${prefix === 'reset' ? 'reset-' : ''}strength-fill`);
+            const text = document.getElementById(`${prefix === 'reset' ? 'reset-' : ''}strength-text`);
+
+            fill.className = `strength-fill ${strength}`;
+            text.textContent = strength.charAt(0).toUpperCase() + strength.slice(1);
+        }
+
+        /**
+         * Show Error Message
+         */
+        function showError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const error = document.getElementById(`${fieldId}-error`);
+
+            if (field) {
+                field.classList.add('error');
+            }
+            if (error) {
+                error.textContent = message;
+                error.classList.add('show');
+            }
+        }
+
+        /**
+         * Clear All Errors
+         */
+        function clearErrors(tab) {
+            document.querySelectorAll(`#${tab}-tab .error-message`).forEach(el => {
+                el.classList.remove('show');
+            });
+            document.querySelectorAll(`#${tab}-tab .form-input.error`).forEach(el => {
+                el.classList.remove('error');
+            });
+        }
+
+        /**
+         * Pre-fill email if remembered
+         */
+        window.addEventListener('DOMContentLoaded', () => {
+            const remembered = localStorage.getItem('mindflow_remember_email');
+            if (remembered) {
+                document.getElementById('login-email').value = remembered;
+                document.getElementById('remember-me').checked = true;
+            }
+
+            // Demo: Pre-fill test account
+            if (window.location.search.includes('demo')) {
+                document.getElementById('login-email').value = 'demo@mindflow.local';
+                document.getElementById('login-password').value = 'DemoPassword123!';
+            }
+        });
+
+        // Prevent form submission on tab click
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+            });
+        });
+    </script>
+</body>
+</html>

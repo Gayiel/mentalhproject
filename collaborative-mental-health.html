@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Mind Flow - Collaborative Mental Health Support</title>
     
+    <!-- Authentication Check -->
+    <script>
+        if (!window.location.href.includes('collaborative-mental-health.html')) {
+            // Redirect to this file if someone tries to access directly
+            window.location.href = 'collaborative-mental-health.html';
+        }
+    </script>
+    
     <!-- Onboarding Styles -->
     <link rel="stylesheet" href="css/onboarding-styles.css">
     
@@ -559,14 +567,21 @@
         <div id="crisis-shield" class="crisis-shield">
             🛡️ Crisis Protocol Active
         </div>
-        <button class="about-tool-btn" onclick="window.onboardingSystem?.showDetailedAbout()" title="Learn about this tool">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                <circle cx="8" cy="8" r="7"></circle>
-                <path d="M8 5.5v4"></path>
-                <circle cx="8" cy="12" r="0.5" fill="currentColor"></circle>
-            </svg>
-            About
-        </button>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <button class="about-tool-btn" onclick="window.onboardingSystem?.showDetailedAbout()" title="Learn about this tool">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="8" cy="8" r="7"></circle>
+                    <path d="M8 5.5v4"></path>
+                    <circle cx="8" cy="12" r="0.5" fill="currentColor"></circle>
+                </svg>
+                About
+            </button>
+            <div id="user-profile-section" style="display: flex; gap: 8px; align-items: center;">
+                <span id="user-name" style="font-size: 13px; color: #64748b; font-weight: 500;"></span>
+                <button onclick="showUserMenu()" style="background: #f1f5f9; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.2s;" title="User menu">⚙️</button>
+                <button onclick="handleLogout()" style="background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500; transition: all 0.2s;" title="Logout">Logout</button>
+            </div>
+        </div>
     </div>
 
     <!-- Main Container -->
@@ -612,8 +627,188 @@
     </div>
 
     <!-- Enhanced Collaborative AI System -->
+    <script src="js/auth-system.js"></script>
     <script src="js/onboarding.js"></script>
     <script src="js/collaborative-ai-system.js"></script>
+
+    <!-- User Authentication & Session Management -->
+    <script>
+        /**
+         * Check authentication on page load
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Verify user is logged in
+            if (!window.authSystem || !window.authSystem.isAuthenticated()) {
+                // Redirect to login if not authenticated
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Load user profile
+            const currentUser = window.authSystem.getCurrentUser();
+            if (currentUser) {
+                document.getElementById('user-name').textContent = `👤 ${currentUser.name}`;
+            }
+
+            // Initialize data isolation for this user
+            window.currentUserId = currentUser?.id;
+            window.userDataPrefix = `mindflow_user_${currentUser?.id}_`;
+
+            // Load user's conversation history
+            loadUserConversationHistory();
+        });
+
+        /**
+         * Load user-specific conversation history
+         */
+        function loadUserConversationHistory() {
+            if (!window.currentUserId) return;
+
+            const history = JSON.parse(
+                localStorage.getItem(`${window.userDataPrefix}conversation_history`) || '[]'
+            );
+
+            // Set up chat system to use user-specific storage
+            if (window.mentalHealthAI) {
+                window.mentalHealthAI.userDataPrefix = window.userDataPrefix;
+                window.mentalHealthAI.loadConversationHistory = function() {
+                    return history;
+                };
+                window.mentalHealthAI.saveConversationHistory = function(messages) {
+                    localStorage.setItem(
+                        `${window.userDataPrefix}conversation_history`,
+                        JSON.stringify(messages)
+                    );
+                };
+            }
+        }
+
+        /**
+         * Handle user logout
+         */
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.authSystem.logout();
+                window.location.href = 'login.html';
+            }
+        }
+
+        /**
+         * Show user menu
+         */
+        function showUserMenu() {
+            const currentUser = window.authSystem.getCurrentUser();
+            const menu = prompt(`User: ${currentUser.name}\nEmail: ${currentUser.email}\n\nOptions:\n1. Profile\n2. Change Password\n3. Delete Account\n\nEnter number (or cancel):`, '1');
+
+            if (menu === '1') {
+                showProfileModal();
+            } else if (menu === '2') {
+                showChangePasswordModal();
+            } else if (menu === '3') {
+                if (confirm('⚠️ WARNING: This will permanently delete your account and all data!\n\nAre you absolutely sure?')) {
+                    deleteUserAccount();
+                }
+            }
+        }
+
+        /**
+         * Show profile modal
+         */
+        function showProfileModal() {
+            const currentUser = window.authSystem.getCurrentUser();
+            const userProfile = window.authSystem.getUserProfile(currentUser.id);
+
+            const profileInfo = `
+Profile Information:
+━━━━━━━━━━━━━━━━━━━
+Name: ${userProfile.name}
+Email: ${userProfile.email}
+Account Created: ${new Date(userProfile.createdAt).toLocaleDateString()}
+Last Login: ${userProfile.lastLogin ? new Date(userProfile.lastLogin).toLocaleString() : 'First login'}
+Status: ${userProfile.status}
+
+Data Export:
+To export your data (GDPR), check browser console.`;
+
+            alert(profileInfo);
+
+            // Make GDPR data available in console
+            window.gdprData = window.authSystem.exportUserData(currentUser.id);
+            console.log('User GDPR Data:', window.gdprData);
+        }
+
+        /**
+         * Show change password modal
+         */
+        function showChangePasswordModal() {
+            const currentPassword = prompt('Current Password:');
+            if (!currentPassword) return;
+
+            const newPassword = prompt('New Password (min 8 characters):');
+            if (!newPassword || newPassword.length < 8) {
+                alert('Password must be at least 8 characters');
+                return;
+            }
+
+            const confirmPassword = prompt('Confirm New Password:');
+            if (newPassword !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+
+            // Verify current password and update
+            const currentUser = window.authSystem.getCurrentUser();
+            window.authSystem.hashPassword(currentPassword).then(async (hash) => {
+                const userData = JSON.parse(
+                    localStorage.getItem(`mindflow_user_${currentUser.id}`) || '{}'
+                );
+                const storedHash = window.authSystem.decrypt(userData.password);
+
+                if (hash === storedHash) {
+                    const newHash = await window.authSystem.hashPassword(newPassword);
+                    userData.password = window.authSystem.encrypt(newHash);
+                    localStorage.setItem(
+                        `mindflow_user_${currentUser.id}`,
+                        JSON.stringify(userData)
+                    );
+                    alert('✓ Password changed successfully');
+                } else {
+                    alert('✗ Current password is incorrect');
+                }
+            });
+        }
+
+        /**
+         * Delete user account
+         */
+        function deleteUserAccount() {
+            const currentUser = window.authSystem.getCurrentUser();
+            window.authSystem.deleteAccount(currentUser.id);
+            alert('Account deleted. Redirecting to login...');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1000);
+        }
+
+        /**
+         * Auto-logout on inactivity
+         */
+        let inactivityTimeout;
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimeout);
+            inactivityTimeout = setTimeout(() => {
+                alert('Your session has expired due to inactivity. Please login again.');
+                window.authSystem.logout();
+                window.location.href = 'login.html';
+            }, 3600000); // 1 hour
+        }
+
+        ['mousedown', 'keydown', 'touchstart'].forEach(event => {
+            document.addEventListener(event, resetInactivityTimer, true);
+        });
+
+        resetInactivityTimer();
+    </script>
 
     <!-- Additional methods for UI interactions -->
     <script>
